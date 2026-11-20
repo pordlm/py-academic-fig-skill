@@ -1,6 +1,6 @@
 {
   "name": "academic-figures",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Installable composition bundle contributing the academic-figures skill (publication-ready Chinese academic figures with matplotlib) to DeepSeek Harness",
   "type": "module",
   "main": "index.js",
@@ -17,6 +17,7 @@
     "SKILL.md",
     "README.md",
     "BUILD.json",
+    "screenshots.json",
     "LICENSE",
     "academic_fig",
     "prompts",

@@ -19,7 +19,8 @@ matplotlib 默认的 ``font.family = ['sans-serif']``（DejaVu Sans），中文�
 ---------------------------------------------------
 1. 干净解释器里**不调** ``apply_theme()``，直接 ``paper_fig("single")`` + 中文
    柱状图：渲染时 ``missing from font(s)`` 计数 **== 0**，且提示性 ``UserWarning``
-   **恰好 1 条**，``rcParams["font.family"]`` 里出现 ``SimSun``（真的套上了 CJK 栈）；
+   **恰好 1 条**，``rcParams["font.family"]`` 里出现本机解析出的中文字体
+   （Windows 是 ``SimSun``，Linux 是 ``Noto Serif CJK SC``——CJK 栈真的套上了）；
    同时 ``save()`` 返回值里 ``auto_theme is True``（t30：诊断字段必须真存在），
    而 ``font_retrofit == 0``（``paper_fig`` 在建 axes 之前就套好了主题，没有 Text 要回填）；
 2. 连调两次 ``paper_fig()``：提示**仍然只有 1 条**（不刷屏）；
@@ -123,10 +124,12 @@ def run():
 msgs, err = collect(run)
 glyph, hint = counts(msgs, err)
 fam = list(matplotlib.rcParams["font.family"])
+cjk_fam = afg.typography.cjk_family()   # 各平台不同：Windows 是 SimSun，Linux 是 Noto Serif CJK SC
 res = saved[0]
 fmt_paths = afg.figure_paths(res)
 
 print("[data] font.family =", fam)
+print("[data] 本机中文字体 =", cjk_fam)
 print("[data] 缺字 %d 条 / 提示 %d 条" % (glyph, hint))
 print("[data] save() 返回 =", {k: (type(v).__name__) for k, v in res.items()})
 print("[data] auto_theme=%r font_retrofit=%r 路径键=%s"
@@ -139,9 +142,9 @@ if glyph != 0:
 if hint != 1:
     ok = False
     print("[FAIL] 提示 %d 条（必须恰好 1 条）" % hint)
-if not any("SimSun" in str(f) for f in fam):
+if not any(str(f) == cjk_fam for f in fam):
     ok = False
-    print("[FAIL] font.family 里没有 SimSun，说明 CJK 栈没套上：", fam)
+    print("[FAIL] font.family 里没有本机解析出的中文字体 %r，说明 CJK 栈没套上：%s" % (cjk_fam, fam))
 if res.get("auto_theme") is not True:
     ok = False
     print("[FAIL] save() 返回值里 auto_theme=%r（漏主题路径必须是 True）" % (res.get("auto_theme"),))
@@ -160,7 +163,7 @@ if not all(isinstance(v, Path) for v in fmt_paths.values()):
     print("[FAIL] 格式键的值不是 Path：", {k: type(v).__name__ for k, v in fmt_paths.items()})
 if not ok:
     sys.exit(1)
-print("[ok] 无主题也能出中文：缺字 0 条 / 提示 1 条 / fc-list 里有 SimSun / auto_theme=True")
+print("[ok] 无主题也能出中文：缺字 0 条 / 提示 1 条 / CJK 栈已套上（%s）/ auto_theme=True" % cjk_fam)
 ''')
 
 case("只提示一次", '''

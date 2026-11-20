@@ -57,6 +57,7 @@ DELIVERY_FILES = (
     "pyproject.toml",
     "README.md",
     "SKILL.md",
+    "screenshots.json",
 )
 
 #: **派生目录**：跑一次示例 / 自检就会长出来或变样，不能算进交付面。

@@ -208,6 +208,7 @@ pip install -e D:/path/to/academic-figures
 academic-fig-skill/
 ├── SKILL.md                 # skill 入口（DSH 读它的 frontmatter 决定何时唤醒）
 ├── README.md                # 本文件
+├── screenshots.json         # 市场展示图顺序（插件市场读它，不写就从 README 抓图）
 ├── academic_fig/            # 框架本体（只依赖 numpy + matplotlib）
 │   ├── palette.py           # 冻结色板：墨/纸/6 强调色/语义色/3 套色阶
 │   ├── typography.py        # 字体回退、字号白名单、中文+$混排检测
@@ -226,7 +227,7 @@ academic-fig-skill/
 │   ├── render_plots.py      # 21 张数据图，一条命令跑完 → examples/out/<大类>/
 │   ├── render_showcase.py   # 六面板样张 → assets/style_preview.png
 │   └── data/                # ≤20KB 演示数据（csv/json），物理上合理
-├── assets/                  # 风格样张 + atlas/ 精选参考图（单张 PNG ≤ 600 KB）
+├── assets/                  # 风格样张 + atlas/ 精选参考图（单张 PNG ≤ 600 KB）+ icon-180.png
 └── docs/                    # 架构说明、图表词典
 ```
 
