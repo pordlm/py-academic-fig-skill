@@ -18,7 +18,7 @@ import numpy as np
 from .. import palette as _pal
 from .. import typography as _typo
 from . import base as _base
-from ._common import as_1d, check_len, style_ls
+from ._common import as_1d, as_binary_mask, check_len, style_ls
 
 
 def _looks_like_curve(a: Any, b: Any) -> bool:
@@ -51,14 +51,12 @@ def roc_curve(y_true: Any, y_score: Any, positive: Any = 1) -> tuple[np.ndarray,
     (fpr, tpr, auc) : (ndarray, ndarray, float)
     """
     yt = np.ravel(np.asarray(y_true))
-    ys = np.ravel(np.asarray(y_score, dtype=float))
+    ys = as_1d(y_score, "y_score", caller="roc_curve")
     check_len("y_score", ys, yt.size, caller="roc_curve")
     if yt.size == 0:
         raise ValueError("roc_curve(): y_true 为空")
-    pos = yt == positive
-    if yt.dtype.kind in "OUS":
-        # CSV 读进来常常是字符串 "0"/"1"：按字符串再比一次
-        pos = yt.astype(str) == str(positive)
+    # CSV 读进来常常是字符串 "0"/"1"：统一走 as_binary_mask（按字符串比一次）
+    pos = as_binary_mask(yt, positive, caller="roc_curve")
     if pos.all() or not pos.any():
         raise ValueError("roc_curve(): y_true 必须同时包含正类与负类（检查 positive 参数）")
     order = np.argsort(-ys, kind="mergesort")

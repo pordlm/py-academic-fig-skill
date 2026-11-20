@@ -80,8 +80,18 @@ def forest(ax=None, labels: Sequence[str] | None = None, estimates: Any | None =
     if np.any(est < lo) or np.any(est > hi):
         raise ValueError("forest(): 点估计必须落在 [lower, upper] 内")
     names = as_labels(labels, k, "labels", caller="forest")
-    if log_scale and float(null) <= 0:
-        raise ValueError("forest(): log_scale=True 时 null 必须为正（OR/RR 用 1）")
+    if log_scale:
+        if float(null) <= 0:
+            raise ValueError("forest(): log_scale=True 时 null 必须为正（OR/RR 用 1）")
+        # 对数轴上 ≤ 0 的点会被 matplotlib 静默丢掉（或挤到轴外），看图的人
+        # 会以为「没有这条数据」，所以在这里直接拦下。
+        for arr, name in ((lo, "lower"), (est, "estimates"), (hi, "upper")):
+            bad = np.flatnonzero(arr <= 0)
+            if bad.size:
+                i = int(bad[0])
+                raise ValueError(
+                    f"forest(): log_scale=True 时 {name} 必须全为正（OR/RR/HR 的取值域）；"
+                    f"第 {i} 行是 {arr[i]:g}，无法画在对数轴上")
 
     w = None
     if weights is not None:
@@ -117,6 +127,10 @@ def forest(ax=None, labels: Sequence[str] | None = None, estimates: Any | None =
         p_est, p_lo, p_hi = (float(v) for v in pooled)
         if not p_lo <= p_est <= p_hi:
             raise ValueError("forest(): pooled 的 est 必须落在其 CI 内")
+        if log_scale and (p_lo <= 0 or p_est <= 0 or p_hi <= 0):
+            raise ValueError(
+                f"forest(): log_scale=True 时 pooled 的三个值都必须为正"
+                f"（收到 {p_lo:g}, {p_est:g}, {p_hi:g}）")
         y = -0.55
         ax.add_patch(Polygon([[p_lo, y], [p_est, y + 0.16], [p_hi, y], [p_est, y - 0.16]],
                              closed=True, facecolor=_pal.tint(_pal.BLUE, 0.62),

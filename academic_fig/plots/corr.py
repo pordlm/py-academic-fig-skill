@@ -21,14 +21,29 @@ from . import base as _base
 from ._common import as_labels, as_matrix
 
 
-def corrcoef(matrix: Any, *, method: str = "pearson") -> tuple[np.ndarray, int]:
+def corrcoef(matrix: Any, *, method: str = "pearson",
+             constant_policy: str = "raise") -> tuple[np.ndarray, int]:
     """计算相关矩阵（numpy 实现，不含 scipy 依赖）。
+
+    Parameters
+    ----------
+    matrix : 2D array
+        样本 × 变量矩阵。
+    method : {"pearson", "spearman"}
+        相关系数类型。
+    constant_policy : {"raise", "nan"}
+        某个变量整列取值恒定（标准差为 0）时的处理：``"raise"``（默认）
+        直接报错——常量列与任何变量的相关都无定义，硬算出来的 0 会被
+        当成「无相关」误读；``"nan"`` 把它所在的整行/整列标成 NaN。
 
     Returns
     -------
     (corr, n) : (ndarray, int)
         相关矩阵（p×p）与样本数。
     """
+    if constant_policy not in ("raise", "nan"):
+        raise ValueError(
+            f"corr(): constant_policy 只支持 'raise'/'nan'（收到 {constant_policy!r}）")
     X = as_matrix(matrix, "matrix", caller="corr").astype(float)
     if X.shape[0] < 3:
         raise ValueError(f"corr(): 至少需要 3 个样本（收到 {X.shape[0]} 个）")
@@ -54,9 +69,19 @@ def corrcoef(matrix: Any, *, method: str = "pearson") -> tuple[np.ndarray, int]:
         raise ValueError(f"corr(): method 只支持 'pearson'/'spearman'（收到 {method!r}）")
 
     sd = X.std(axis=0, ddof=1)
-    sd[sd == 0] = 1e-12
-    Z = (X - X.mean(axis=0)) / sd
+    flat = np.flatnonzero(sd == 0)
+    if flat.size and constant_policy == "raise":
+        cols = "、".join(str(int(j) + 1) for j in flat)
+        raise ValueError(
+            f"corr(): 第 {cols} 列取值恒定（标准差为 0），相关系数无定义；"
+            f"请删掉这些变量，或传 constant_policy='nan' 把它们标成 NaN")
+    safe = np.where(sd == 0, 1.0, sd)
+    Z = (X - X.mean(axis=0)) / safe
     C = (Z.T @ Z) / (n - 1)
+    np.fill_diagonal(C, 1.0)
+    if flat.size:  # constant_policy == "nan"
+        C[flat, :] = np.nan
+        C[:, flat] = np.nan
     return np.clip(C, -1.0, 1.0), n
 
 
@@ -64,7 +89,9 @@ def corr(ax=None, matrix: Any | None = None, *, data: Any | None = None,
          names: Sequence[str] | None = None, method: str = "pearson",
          mask_upper: bool = True, annotate: bool | str = True, fmt: str = "{:.2f}",
          cbar: bool = True, cbar_label: str | None = None, vmin: float = -1.0,
-         vmax: float = 1.0, triangle: bool = False):
+         vmax: float = 1.0, triangle: bool = False,
+         is_correlation_matrix: bool | None = None,
+         constant_policy: str = "raise"):
     """画相关矩阵热图。
 
     Parameters
@@ -85,6 +112,13 @@ def corr(ax=None, matrix: Any | None = None, *, data: Any | None = None,
         是否在格内写系数；``"auto"`` 在变量数 ≤ 10 时写。
     triangle : bool
         是否画下三角（掩上三角且不留空白）；默认 False 时保留方形矩阵。
+    is_correlation_matrix : bool, optional
+        ``matrix`` 已是一张相关矩阵（而不是样本矩阵）时显式传 ``True``；
+        传 ``False`` 则强制按样本矩阵重算。缺省 ``None`` 时按「方阵 + 对称 +
+        对角线为 1 + 值不越界」自动识别——恰好满足这些条件的样本矩阵会被
+        误认，所以知道自己在传什么时应显式指定。
+    constant_policy : {"raise", "nan"}
+        整列取值恒定时的处理，见 :func:`corrcoef`。
 
     Returns
     -------
@@ -100,11 +134,32 @@ def corr(ax=None, matrix: Any | None = None, *, data: Any | None = None,
     M = np.asarray(matrix, dtype=float)
     if M.ndim != 2:
         raise ValueError(f"corr(): matrix 必须是二维（收到 {M.ndim} 维）")
-    if M.shape[0] == M.shape[1] and np.allclose(M, M.T) and np.allclose(np.diag(M), 1.0):
+
+    def _looks_like_corr(A: np.ndarray) -> bool:
+        return (A.shape[0] == A.shape[1]
+                and np.all(np.isfinite(A))
+                and np.allclose(A, A.T)
+                and np.allclose(np.diag(A), 1.0)
+                and float(A.min()) >= -1.0 - 1e-9
+                and float(A.max()) <= 1.0 + 1e-9)
+
+    if is_correlation_matrix is True:
+        if M.shape[0] != M.shape[1]:
+            raise ValueError("corr(): is_correlation_matrix=True 时 matrix 必须是方阵")
+        if not _looks_like_corr(M):
+            raise ValueError(
+                "corr(): is_correlation_matrix=True 但 matrix 不像相关矩阵"
+                "（要求对称、对角线为 1、取值在 [-1, 1]）")
+        C, n = M, 0
+        p = M.shape[0]
+    elif is_correlation_matrix is False:
+        C, n = corrcoef(M, method=method, constant_policy=constant_policy)
+        p = C.shape[0]
+    elif _looks_like_corr(M) and M.shape[0] == M.shape[1]:
         C, n = M, 0
         p = M.shape[0]
     else:
-        C, n = corrcoef(M, method=method)
+        C, n = corrcoef(M, method=method, constant_policy=constant_policy)
         p = C.shape[0]
     labels = as_labels(names, p, "names", caller="corr")
 

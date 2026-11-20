@@ -59,17 +59,17 @@ panel_result = panel_note              # B 包的面板备注
 plot_reference_circle = reference_circle  # A 包旧名
 
 # ------------------------------------------------------------------ 可选子包
-# diagrams/ 由另一位成员并行开发：没就绪时 `import academic_fig` 必须照样能跑。
-try:  # pragma: no cover - 取决于仓库里是否已有 diagrams/
+# diagrams/ 是正式组成部分，但允许单独缺省（例如只取了绘图部分的精简安装）。
+try:
     from . import diagrams  # type: ignore[attr-defined]
-except Exception:  # noqa: BLE001 - 任何导入失败都降级为「未安装」
+except ImportError:  # 只吞「模块不存在」；模块内部写错（NameError 等）必须照常抛
     diagrams = None  # type: ignore[assignment]
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 def _compute_build() -> str:
-    """生成 build 串：``0.2.0+YYYYMMDD-HHMM``。
+    """生成 build 串：``0.2.1+YYYYMMDD-HHMM``。
 
     复评时「哪个版本被戳过」必须可判：同一分钟内多文件在改写，靠版本号常量看不出来，
     所以把**最近一次写入 BUILD.json 的时间戳**编进 build 串。

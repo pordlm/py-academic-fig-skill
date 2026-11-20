@@ -8,7 +8,8 @@
     python -m academic_fig.cli init --example bar [--out fig01_bar.py] [--force]
     python -m academic_fig.cli init --example architecture     # 示意图同样支持
 
-退出码：``0`` 正常；``1`` 有 error（``check`` 的 ``--strict`` 或默认行为）；
+退出码：``0`` 没有任何 error；``1`` 有 error（``check`` 在 0/1 上都按 error 计，
+``--strict`` 额外把「命名不规范」这类 warning 升成 error）；
 ``2`` 参数/用法错误（argparse 自己抛的也是 2）。
 """
 from __future__ import annotations
@@ -398,8 +399,7 @@ def _cmd_check(args: argparse.Namespace) -> int:
             print(line)
     bad = checks.has_errors(issues)
     if bad and not args.strict:
-        print("\n（未加 --strict：仅提示，退出码 0）")
-        return 0
+        print("\n（以上含 error 级问题；未加 --strict 时命名不规范只算 warning）")
     return 1 if bad else 0
 
 
@@ -434,7 +434,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_check = sub.add_parser("check", help="检查出图目录（尺寸/dpi/PDF/配色/字体）")
     p_check.add_argument("--dir", default=".", help="产物目录（默认当前目录）")
     p_check.add_argument("--strict", action="store_true",
-                         help="有 error 即退出码 1（CI 用）")
+                         help="把命名不规范等 warning 升为 error（CI 用；error 本来就返回 1）")
     p_check.add_argument("--json", action="store_true", help="输出 JSON（机器读）")
     p_check.add_argument("--script", action="append", default=[],
                          help="额外静态检查的脚本（可重复）")

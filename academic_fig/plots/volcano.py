@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 import numpy as np
+import warnings
 
 from .. import palette as _pal
 from .. import typography as _typo
@@ -35,7 +36,7 @@ def volcano(ax=None, log2fc: Any | None = None, pvalue: Any | None = None, *,
     log2fc : sequence of float, optional
         对数倍数变化；也可用 ``data={"log2fc":…, "pvalue":…, "names":…}``。
     pvalue : sequence of float, optional
-        显著性（原始 p 或校正 q），须在 (0, 1]；0 会用 1e-300 兜底。
+        显著性（原始 p 或校正 q），须在 [0, 1]；恰好为 0 时按 1e-300 兜底并给 warn。
     data : Mapping, optional
         数据字典（``log2fc`` / ``pvalue`` / ``names``）。
     names : sequence of str, optional
@@ -66,8 +67,17 @@ def volcano(ax=None, log2fc: Any | None = None, pvalue: Any | None = None, *,
     check_len("pvalue", p, fc.size, caller="volcano")
     if fc.size == 0:
         raise ValueError("volcano(): 数据为空")
-    if np.any(p <= 0) or np.any(p > 1):
-        raise ValueError("volcano(): pvalue 必须落在 (0, 1]；0 请先做下限截断")
+    if np.any(p < 0) or np.any(p > 1):
+        raise ValueError("volcano(): pvalue 必须落在 [0, 1]")
+    n_zero = int(np.sum(p == 0))
+    if n_zero:
+        # 0 没法取 -log10；按 docstring 承诺截断到 1e-300，并在 stderr 说明，
+        # 不让读者以为这是真实量级。
+        warnings.warn(
+            f"volcano(): {n_zero} 个 pvalue 为 0，已按 1e-300 兜底（-log10 上限 300）；"
+            f"图注应说明这一下限截断，或改用校正后仍 >0 的 q 值",
+            UserWarning, stacklevel=2)
+        p = np.where(p == 0, 1e-300, p)
     if fc_thresh < 0:
         raise ValueError(f"volcano(): fc_thresh 不能为负（收到 {fc_thresh}）")
     if not 0 < float(p_thresh) < 1:

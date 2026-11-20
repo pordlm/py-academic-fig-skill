@@ -75,7 +75,7 @@ python -m academic_fig.cli check --dir examples/out --strict
 
 它会逐张检查：宽高比、PNG dpi、同名 PDF 是否存在、配色是否越界、命名前缀、
 以及脚本里有没有 `tab10/jet/rainbow`、字号是否越界、有没有中文与 `$…$` 混排。
-`--strict` 下有任一 error 就退出码 1，可直接挂进 CI 或 pre-commit。
+有任一 error 就退出码 1（`--strict` 额外把「命名不规范」升成 error），可直接挂进 CI 或 pre-commit。
 
 交付物清单（建议逐条勾）：
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "academic-figures"
-version = "0.2.0"
+version = "0.2.1"
 description = "论文插图风格框架：简单高级的 matplotlib 图表与框架图（含提示词库）"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,7 +18,8 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    # 许可证只用 SPDX 表达式（上面的 license 字段）声明：PEP 639 之后
+    # `License ::` 开头的 classifier 会被 setuptools 直接判为非法配置。
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -35,8 +36,15 @@ dev = ["pytest>=7"]
 afig = "academic_fig.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/pordlm/academic-figures"
+Homepage = "https://github.com/pordlm/py-academic-fig-skill"
+Repository = "https://github.com/pordlm/py-academic-fig-skill"
+Issues = "https://github.com/pordlm/py-academic-fig-skill/issues"
+Changelog = "https://github.com/pordlm/py-academic-fig-skill/releases"
 
 [tool.setuptools]
 packages = ["academic_fig", "academic_fig.plots", "academic_fig.diagrams"]
+# wheel 只装 Python 包（`import academic_fig` 与 `afig` 命令）。
+# SKILL.md / prompts / references / assets 是「skill 包」的交付面，体积大且
+# 不是运行时代码：用 `dsh plugin add <repo>` 或 `python scripts/install_skill.py`
+# 安装（会落到 ~/.dsh/skills/academic-figures）。两种安装方式的边界见 README。
 include-package-data = false

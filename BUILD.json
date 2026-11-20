@@ -1,11 +1,11 @@
 {
-  "version": "0.2.0",
-  "build": "0.2.0+20261121-0009",
-  "generated_at": "2026-11-21T00:09:47",
-  "source_mtime": "2026-11-21T00:09:47",
+  "version": "0.2.1",
+  "build": "0.2.1+20261121-0044",
+  "generated_at": "2026-11-21T00:44:00",
+  "source_mtime": "2026-11-21T00:44:00",
   "package_py_files": 40,
-  "delivery_files": 138,
-  "delivery_bytes": 3165298,
+  "delivery_files": 139,
+  "delivery_bytes": 3175737,
   "delivery_excludes": [
     "examples/out",
     "reports",
@@ -17,8 +17,8 @@
   ],
   "key_files": {
     "academic_fig/__init__.py": {
-      "sha256": "d5ac92c85836342d440632354ddd0f8264ea70269d7aef298d57dc5b52f763e1",
-      "bytes": 5005
+      "sha256": "d09243235683100d67d820e6bbeaf927b8974eb1c6c97ca68433906550965ea0",
+      "bytes": 4974
     },
     "academic_fig/checks.py": {
       "sha256": "a0b0b66228b4337be2bf0db1ab889cef96e685afce22a35ebaba3b40acd4dea6",
@@ -29,28 +29,28 @@
       "bytes": 40012
     },
     "academic_fig/layout.py": {
-      "sha256": "8b4ae5b21f17a0bd4c009bbc7ec2c624a604eb3724ede0cbdf4c0ffb7e92a3ec",
-      "bytes": 24989
+      "sha256": "8e7c9e0c30d834aa8c7ac0a4e11894199fc2956fa8cee565e3045740e8ceae50",
+      "bytes": 24421
     },
     "academic_fig/style.py": {
-      "sha256": "f1219b9af6f1d27e82d3d1e8782c5efc2599f86831f9ff83dbeabdc6e1564aa7",
-      "bytes": 28682
+      "sha256": "2acacc66c7b97f34e1e13dc985c3cbf269dd575479e6751fee2044d1d8cef795",
+      "bytes": 28012
     },
     "academic_fig/plots/__init__.py": {
-      "sha256": "f12115025fb7de791ef3af0843c62331d4adeed41b6f33453c4655b1d4d4ad41",
-      "bytes": 11704
+      "sha256": "d774f506614693b27d97a4f47f8ef0723034aed9333c32345302efdddcd0f621",
+      "bytes": 11392
     },
     "academic_fig/palette.py": {
       "sha256": "cfba9cfb9a603edd4c2434474949d8f70b0eaa9f1fabf9b7cb56efaada729061",
       "bytes": 7124
     },
     "README.md": {
-      "sha256": "3e50c948bba42d07bcd84f13d37e8b30699e97dcecc3d96e370e402cad8bd28e",
-      "bytes": 32105
+      "sha256": "b6b65fb95adc298c2719963c42c13ed0efca640b2e3e8d719e001dd70a58b77a",
+      "bytes": 33262
     },
     "SKILL.md": {
-      "sha256": "790451abc186dff67ff0056cb61753c1f1fcb5ab87bc3bbb2ba456a33e87d823",
-      "bytes": 16447
+      "sha256": "8eadd9beeef204c60d09fe1e5a1b009c0c70cd6b81a935b3bbb08e1b4a5c3902",
+      "bytes": 16448
     }
   }
 }

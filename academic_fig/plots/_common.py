@@ -44,6 +44,24 @@ def as_matrix(values: Any, name: str, *, caller: str = "", ndim: int = 2) -> np.
     return arr
 
 
+def as_binary_mask(labels: Any, positive: Any = 1, *, caller: str = "",
+                   name: str = "y_true") -> np.ndarray:
+    """把类别标签转成「是否正类」的布尔掩码。
+
+    字符串标签按 ``str()`` 比较（CSV 读进来常是 ``"0"/"1"``），数值标签直接比；
+    不做 ``bool()`` 转换——那会把 ``"0"``、``2`` 之类静默当成正类。
+    """
+    where = f"{caller}(): " if caller else ""
+    arr = np.ravel(np.asarray(labels))
+    if arr.size == 0:
+        raise ValueError(f"{where}{name} 为空")
+    if arr.dtype.kind in "OUS":
+        return arr.astype(str) == str(positive)
+    if arr.dtype.kind == "b":
+        return arr if positive in (True, 1, "1") else ~arr
+    return arr == positive
+
+
 def check_len(name: str, arr: Sequence, expected: int, *, caller: str = "") -> None:
     """长度必须与 ``expected`` 一致。"""
     where = f"{caller}(): " if caller else ""

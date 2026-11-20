@@ -56,7 +56,7 @@ for p in afg.figure_paths(paths).values():   # 只关心路径时先过这一层
 ## 安装
 
 本 skill 就是一个 Python 包（`academic_fig/`）+ 提示词库（`prompts/`）+ 文档（`references/`）。
-三种装法，任选其一。
+四种装法，按需选（AI 用 0/A/B，代码调用用 P）。
 
 ### 方式 0：装进 DSH（skill 插件，一条命令）
 
@@ -72,6 +72,23 @@ dsh plugin add https://github.com/pordlm/py-academic-fig-skill
 ```bash
 pip install numpy matplotlib          # 想直接传 DataFrame 再加 pandas
 ```
+
+### 方式 P：只装 Python 库（`pip install`，不含 skill 资产）
+
+```bash
+pip install git+https://github.com/pordlm/py-academic-fig-skill   # 或 pip install -e <仓库根>
+afig list                                                         # 验证命令行可用
+```
+
+这条路径**只装 Python 包**（`academic_fig` + `afig` 命令，约 1 MB）：
+
+| 装法 | 得到什么 | 拿不到什么 |
+| --- | --- | --- |
+| `dsh plugin add`（方式 0） | `SKILL.md` + `prompts/` + `references/` + 代码，AI 可直接按 skill 出图 | 不装 numpy/matplotlib，要自己 `pip install` |
+| `install_skill.py`（方式 A/B） | 同上，落到 `~/.dsh/skills/academic-figures` | 同上 |
+| `pip install`（方式 P） | `import academic_fig`、`afig` 命令，可在任何脚本里画图 | `SKILL.md`/`prompts/`/`references/`/`assets/` 不在 wheel 里（`include-package-data = false`），需要提示词库时请用方式 0/A/B 或直接读仓库 |
+
+两种角色可以并存：`pip install` 供代码调用，`dsh plugin add` 供 AI 调用，互不覆盖。
 
 ### 方式 A：复制安装（推荐，装完可脱离本仓库）
 
@@ -125,7 +142,7 @@ python scripts/install_skill.py --force          # 覆盖旧安装（等价于�
 
 ```text
 [4/4] 完成（copy，127 个文件）
-build=0.2.0+20261105-1335
+build=0.2.1+YYYYMMDD-HHMM
 目标：D:\paper\.dsh\skills\academic-figures
 ```
 
@@ -378,7 +395,7 @@ python -m academic_fig.cli list --category distribution       # 只看一类
 python -m academic_fig.cli init --example roc --out demo/     # 生成可运行的起步脚本
 ```
 
-`check` 的退出码：无 error → 0；有 error（或 `--strict` 下有 error）→ 1。
+`check` 的退出码：没有 error → 0；有 error → 1（不加 `--strict` 时「命名不规范」只算 warning，加了才算 error）。
 它查这些：宽高比 0.6–2.6 · PNG dpi ≥ 300 · 同名 PDF 是否存在 · 配色是否越界 ·
 `figNN_名称` 命名 · 脚本里是否 `apply_theme` · 是否用了 `tab10/jet/rainbow` ·
 字号是否在白名单 · 中文与 `$…$` 是否混排 · 字形是否缺失（真实渲染探针）·
