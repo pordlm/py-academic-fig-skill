@@ -1,15 +1,15 @@
 {
   "version": "0.2.3",
-  "build": "0.2.3+20261121-0122",
-  "generated_at": "2026-11-21T01:22:54",
-  "source_mtime": "2026-11-21T01:22:54",
+  "build": "0.2.3+20261121-0139",
+  "generated_at": "2026-11-21T01:40:10",
+  "source_mtime": "2026-11-21T01:39:50",
   "package_py_files": 40,
   "delivery_files": 150,
-  "delivery_bytes": 3285719,
-  "delivery_tree_sha256": "522e254fb4935813114be7a54dcc03f6066241f8c07fadfa0df8d7080f063da9",
+  "delivery_bytes": 3273575,
+  "delivery_tree_sha256": "0907a91ec9c8a3c479ab9a7195dea57efd6b9bac21b71e3bb7ba1b303e844377",
   "delivery_manifest": {
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "README.md": "bf9a3aabd719504ae126621015830059bd6e6794d4d73b6cb794c15461e6b8fd",
+    "README.md": "1873c8e894c5ff3e187d24ccd34c61e4369cf3ed2f6cc7707e756aec84e2818d",
     "SKILL.md": "c5af3f93771bd6fcafd5fb45f1f1ed17e74a407ba147d0256d8d73c9b3f3920f",
     "academic_fig/__init__.py": "180ad0126c8dc487baa67a18174164e42184ca01d0ecbacbfc2c87f4403f3373",
     "academic_fig/checks.py": "a0b0b66228b4337be2bf0db1ab889cef96e685afce22a35ebaba3b40acd4dea6",
@@ -198,8 +198,8 @@
       "bytes": 7124
     },
     "README.md": {
-      "sha256": "bf9a3aabd719504ae126621015830059bd6e6794d4d73b6cb794c15461e6b8fd",
-      "bytes": 33975
+      "sha256": "1873c8e894c5ff3e187d24ccd34c61e4369cf3ed2f6cc7707e756aec84e2818d",
+      "bytes": 21831
     },
     "SKILL.md": {
       "sha256": "c5af3f93771bd6fcafd5fb45f1f1ed17e74a407ba147d0256d8d73c9b3f3920f",

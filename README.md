@@ -1,265 +1,128 @@
-# academic-figures · 中文论文插图（简单高级框架风）
+<div align="center">
+
+<img src="assets/icon-180.png" width="84" alt="academic-figures logo" />
+
+# academic-figures
+
+**可复现、可投稿的中文论文插图框架 & AI Agent Skill**
+
+白纸 · 墨线 · 细框 · 低饱和语义色 · 300 dpi PNG + 矢量 PDF 双出
 
 [![CI](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml)
+[![Python >=3.10](https://img.shields.io/badge/python-%3E%3D3.10-2F5D8A.svg)](pyproject.toml)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-3F6B52.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.3-5B6B7C.svg)](pyproject.toml)
 
-把「论文里要一张图」变成**可复现的代码 + 可投稿的产物**：白纸、墨线、细框、
-低饱和强调色、充足留白——像框架图，不像数据看板，也不像 AI 海报。
+[快速上手](#30-秒上手) · [安装](#安装) · [图表与示意图](#图表与示意图) · [样张展示](#样张展示) · [风格规范](#风格规范) · [CLI 自检](#cli-与出图自检) · [文档](#相关文档)
 
-- 一次 `apply_theme()`，之后**任何** matplotlib 代码都自动是这个风格（不限于本仓库的渲染器）。
-- 26 个现成渲染器，两类签名（别混用）：数据图 21 个
-  `(ax=None, <位置数据参数>, *, …) -> ax`（也接受 `data=` 关键字，`ax` 可省）；
-  示意图 5 个 `diagram(spec, *, width=…, …) -> ax`（自己开画布，**不接收** `ax`）。
-- PNG(300 dpi) + PDF(矢量，字体嵌入) 双出，写盘后**自动体检**（dpi/宽高比/命名）。
-- 中文字体自动回退（Windows 优先），并静态拦「中文 + `$…$` 混排」这个方框高发区。
-- 一条命令自检：`python -m academic_fig.cli check --dir examples/out --strict`。
+</div>
+
+---
+
+`academic-figures` 把「论文里要一张图」变成**可复现的 Python 代码**与**符合期刊审美的投稿产物**——克制、清晰、留白充足，像严谨的学术框架图，而不是数据看板或 AI 海报。
 
 ![风格样张](assets/style_preview.png)
 
-> 上面这张就是 `examples/render_showcase.py` 的输出：六个面板共用一套色板与线宽，
-> 图注统一写「数据来源 + 口径」。
+> 由 [`examples/render_showcase.py`](examples/render_showcase.py) 直接生成：六面板共用同一套色板、线宽与字体栈，图注统一标明数据来源与统计口径。
+
+---
+
+## 核心特性
+
+- **一键统一样式**：调用一次 `apply_theme()`，后续所有 matplotlib 代码（不限于内置渲染器）自动应用白底、无网格、细框、朝内刻度与低饱和配色。
+- **26 个现成渲染器**：内置 **21 种科研数据图**（10 大类）与 **5 种声明式示意图**（架构 / 流程 / 场量 / 几何 / 门限），并保留底层原语以自由绘制任意自定义图表。
+- **中文排版不踩坑**：内置跨平台中文字体回退（Windows 优先，兼容 Linux / macOS），图注按渲染宽度自动折行并动态增高画布，静态拦截「中文与 `$...$` 混排变方框」问题。
+- **投稿级双出 + 自动体检**：`save()` 同步导出 300 dpi PNG 与嵌入字体的矢量 PDF（可选 SVG），配合 CLI 自检门校验分辨率、栏宽/宽高比、配色、命名与字形完整性，可直接接入 CI。
+- **代码库 + AI Skill 双形态**：既可作为独立 Python 包 `pip install`，也可作为带中文提示词库（`prompts/`）与规范手册（`references/`）的 DSH Skill 安装，让 AI 严格按同一标准出图。
 
 ---
 
 ## 30 秒上手
 
 ```python
-import matplotlib; matplotlib.use("Agg")     # 服务器/无 GUI 必须；要在 pyplot 之前
+import matplotlib; matplotlib.use("Agg")          # 无 GUI / 服务器环境必填，须在 pyplot 之前
 import academic_fig as afg
 
-afg.apply_theme()                            # ① 主题：白底、无网格、中文字体、300dpi、PDF 嵌入
-fig, ax = afg.paper_fig("single")            # ② 画布：单栏 3.35in（双栏用 "double" = 7.0in）
-afg.plots.bar(ax, ["对照", "低剂量", "高剂量"], [41, 49, 60],
-              errors=[1.6, 2.3, 2.4], highlight=[2], ylabel="响应值（a.u.）")   # ③ 画
-afg.panel(ax, label="(a)", title="组间响应差异")                                  # ④ 标
-afg.footnote(fig, "数据来源：示例数据；口径：柱为均值，误差棒为 ± 1 SD（n=12）。")   # ⑤ 注
-afg.save(fig, "fig01_response")              # ⑥ 出图：fig01_response.png + .pdf
+afg.apply_theme()                                 # ① 主题：白底、细框、中文字体、300 dpi
+fig, ax = afg.paper_fig("single")                 # ② 画布：单栏 3.35 in（双栏用 "double" = 7.0 in）
+afg.plots.bar(
+    ax, ["对照", "低剂量", "高剂量"], [41, 49, 60],
+    errors=[1.6, 2.3, 2.4], highlight=[2],
+    ylabel="响应值（a.u.）",
+)                                                 # ③ 绘图：仅这一行随图型变化
+afg.panel(ax, label="(a)", title="组间响应差异")    # ④ 面板标签与标题
+afg.footnote(fig, "数据来源：示例数据；口径：均值 ± 1 SD（n=12）。")  # ⑤ 自动折行图注
+paths = afg.save(fig, "fig01_response")           # ⑥ 双出 fig01_response.png + .pdf 并自动体检
 ```
 
-六行里只有第 ③ 行随图型变化，其余五行**永远是这五步**。
-`save()` 会自动建目录、按 `figNN_名称` 命名、并在写盘后核对 dpi 与宽高比。
+> **提示**：`save()` 返回的字典同时包含产物路径与诊断字段（`auto_theme`、`font_retrofit`）。遍历输出文件时，请使用 `afg.figure_paths(paths)` 过滤路径键。
 
-返回值是「格式键 + 两个诊断键」的字典，看清类型再用：
+### 已有 matplotlib 脚本快速接入
+
+无需重写已有绘图逻辑，只需套用主题、画布与坐标轴原语：
 
 ```python
-paths = afg.save(fig, "fig01_response")
-# {'png': WindowsPath(...), 'pdf': WindowsPath(...),      ← 恒为 Path
-#  'auto_theme': True, 'font_retrofit': 41}               ← 诊断用 bool / int
-
-for p in afg.figure_paths(paths).values():   # 只关心路径时先过这一层
-    print(p.name)
+afg.apply_theme()
+fig, ax = afg.paper_fig("single")
+ax.plot(x, y, color=afg.palette.CATEGORICAL[0], lw=1.0)  # 保留任意原生 matplotlib 调用
+afg.style_axes(ax)
+afg.panel(ax, xlabel="时间（s）", ylabel="响应（a.u.）")
+afg.footnote(fig, "数据来源：…；口径：…")
+afg.save(fig, "fig02_custom")
 ```
-
-`auto_theme` 告诉你「这张图的主题是不是库替你兜的」（漏了 `apply_theme()` 时为 `True`，
-显式调用过则为 `False`）；`font_retrofit` 是本次被改写到中文字体栈的文字个数
-（`0` 表示一个没动——你自己套过主题，或主题在写字之前就套好了）。
 
 ---
 
 ## 安装
 
-本 skill 就是一个 Python 包（`academic_fig/`）+ 提示词库（`prompts/`）+ 文档（`references/`）。
-四种装法，按需选（AI 用 0/A/B，代码调用用 P）。
+环境要求：**Python ≥ 3.10**，核心依赖仅 `numpy` 与 `matplotlib`（`pandas` 可选，安装后支持直接传入 DataFrame）。
 
-### 方式 0：装进 DSH（skill 插件，一条命令）
+| 安装方式 | 适用场景 | 包含内容 |
+| --- | --- | --- |
+| **`dsh plugin add`** | 给 DSH / AI Agent 装技能 | `SKILL.md` + `prompts/` + `references/` + 源码（Python 依赖需另装） |
+| **`pip install`** | 在 Python 项目中直接调用 | `academic_fig` 包 + `afig` 命令（约 1 MB，不含提示词与样张资产） |
+| **`install_skill.py`** | 本地离线安装 / 边改边用 | 完整技能目录复制到 `.dsh/skills/academic-figures`（支持软链接） |
 
-本仓库同时是一个 DSH bundle（`package.json` 里的 `dsh.bundle` + `cordis.patch.yml` + `index.js`）：
-装上后 `SKILL.md`、`prompts/`、`references/` 会直接进 DSH 的技能目录，AI 自己就能按本 skill 出图。
+> `pip install` 与技能安装互不冲突，可同时使用。
+
+### 1. 作为 DSH Skill 插件安装（推荐给 AI 使用）
 
 ```bash
 dsh plugin add https://github.com/pordlm/py-academic-fig-skill
+pip install numpy matplotlib   # 如需传入 DataFrame 可追加 pandas
 ```
 
-它注册的是**技能**，不是 UI 插件，装完在插件列表里叫 `academic-figures`。Python 侧仍要装依赖才能真的渲染：
+### 2. 作为 Python 包安装（推荐给脚本使用）
 
 ```bash
-pip install numpy matplotlib          # 想直接传 DataFrame 再加 pandas
+pip install git+https://github.com/pordlm/py-academic-fig-skill
+# 或本地开发安装：pip install -e .
+
+afig list                      # 验证命令行可用
 ```
 
-### 方式 P：只装 Python 库（`pip install`，不含 skill 资产）
+### 3. 使用本地安装脚本
 
 ```bash
-pip install git+https://github.com/pordlm/py-academic-fig-skill   # 或 pip install -e <仓库根>
-afig list                                                         # 验证命令行可用
+python scripts/install_skill.py                 # 复制安装到上级目录的 .dsh/skills/academic-figures
+python scripts/install_skill.py --dry-run       # 仅预览安装与清理计划，不写盘
+python scripts/install_skill.py --force         # 升级旧安装（原地覆盖并按清单清理陈旧文件）
+python scripts/install_skill.py --junction      # 链接安装（Windows junction / POSIX symlink，改源码即生效）
+python scripts/install_skill.py --target ~/.dsh/skills/academic-figures   # 指定用户级目录
 ```
 
-这条路径**只装 Python 包**（`academic_fig` + `afig` 命令，约 1 MB）：
+---
 
-| 装法 | 得到什么 | 拿不到什么 |
-| --- | --- | --- |
-| `dsh plugin add`（方式 0） | `SKILL.md` + `prompts/` + `references/` + 代码，AI 可直接按 skill 出图 | 不装 numpy/matplotlib，要自己 `pip install` |
-| `install_skill.py`（方式 A/B） | 同上，落到 `~/.dsh/skills/academic-figures` | 同上 |
-| `pip install`（方式 P） | `import academic_fig`、`afig` 命令，可在任何脚本里画图 | `SKILL.md`/`prompts/`/`references/`/`assets/` 不在 wheel 里（`include-package-data = false`），需要提示词库时请用方式 0/A/B 或直接读仓库 |
+## 图表与示意图
 
-两种角色可以并存：`pip install` 供代码调用，`dsh plugin add` 供 AI 调用，互不覆盖。
+### 数据图：21 个渲染器 / 10 大类
 
-### 方式 A：复制安装（推荐，装完可脱离本仓库）
-
-```bash
-cd <本仓库根>
-python scripts/install_skill.py                 # 默认装到「仓库上级目录」的 .dsh/skills/academic-figures
-python scripts/install_skill.py --dry-run       # 只看计划（含将删掉的陈旧文件），不写盘
-python scripts/install_skill.py --force         # 升级旧安装：原地覆盖 + 清理陈旧文件
-python scripts/install_skill.py --target ~/.dsh/skills/academic-figures   # 显式指定（用户级）
-```
-
-**默认装到哪里**：`<仓库的上级目录>/.dsh/skills/academic-figures`（本机就是
-`D:\paper\.dsh\skills\academic-figures`），即 DSH 扫描的项目级 skill 根。
-脚本**拒绝把目标落在仓库自己的目录树里**——那样只会得到一份 DSH 不会扫描的嵌套副本，
-真正生效的那份仍停在旧版本。显式 `--target` 指到仓库内会报错退出（退出码 1）并提示换位置：
-
-```text
-[x] 拒绝把 skill 装进仓库自己的目录树：<仓库>\.dsh\skills\academic-figures
-    装在仓库里只会得到一份 DSH 不会扫描的嵌套副本，真正生效的那份仍停在旧版本。
-    换一个位置：--target "D:/paper/.dsh/skills/academic-figures"
-```
-
-脚本会先校验 `SKILL.md` 的 frontmatter（`name` 必须是 kebab-case 且与安装目录名一致、
-`description` 非空），再复制 `academic_fig/ prompts/ references/ examples/ assets/ SKILL.md README.md BUILD.json`。
-**重复执行是幂等的**：文件指纹一致时只说「已是最新」，不动目标目录。
-
-⚠️ **目标目录已存在旧版时，首装会被拒绝**（防止误删别人的安装），退出码 1，信息是：
-
-```text
-[x] 目标目录已存在旧版本：…/.dsh/skills/academic-figures
-    它与当前源码不一致（安装指纹 21637e5c823f… ≠ 当前 f8c2331a9c94…），所以默认不覆盖——避免把别人改过的 skill 悄悄冲掉。
-    升级：加 --force（原地覆盖，并按清单删掉源码里已不存在的陈旧文件；
-    你自己往目标目录里放的文件不动）；
-    只想先看计划：加 --dry-run（不写盘，会列出将覆盖与将删除的文件）；
-    想彻底重来：先手动删掉该目录再跑一次。
-```
-
-升级旧版就是照着最后几行办——先 `--dry-run` 看要覆盖什么、要删什么，再加 `--force`：
-
-```bash
-python scripts/install_skill.py --dry-run        # 演练：[dry] 会写入 127 个文件 / 会删除 N 个陈旧文件
-python scripts/install_skill.py --force          # 覆盖旧安装（等价于「刷新到当前 build」）
-```
-
-**`--force` 会清理陈旧文件**：升级时按 `.install-manifest.json` 的清单修剪「上次装过、这次源码里已没有」
-的文件，并顺手删掉因此变空的子目录；你自己往目标目录里放的文件不在清单里，不会被删。
-清单是目标目录里的普通文件，所以修剪是**保守**的：每条路径先过词法检查（绝对路径、盘符、
-`..` 一律拒绝），再用真实路径确认它仍在安装目录内（挡住「中间目录是指向外部的链接」）；
-清单损坏或来自没有 `paths` 字段的旧版本时**一条都不删**，只打印告警——清干净永远排在
-「不误删」之后。这样升级后的副本与仓库逐字节一致，不会出现「源码删了图、安装副本还留着，
-`cli check` 却查不到」的假绿。
-
-复制安装会一并带上 `LICENSE`（GPL 要求分发时附许可证全文）。
-
-每次安装结束都打印两行，方便一眼核对仓库与副本是不是同一版：
-
-```text
-[4/4] 完成（copy，127 个文件）
-build=<version>+YYYYMMDD-HHMM
-目标：D:\paper\.dsh\skills\academic-figures
-```
-
-### 方式 B：链接安装（改代码立刻生效，适合边改边用）
-
-```bash
-python scripts/install_skill.py --junction      # Windows: mklink /J（无需管理员）；Linux/macOS: symlink
-```
-
-目标目录直接指向本仓库，`git pull` 之后不用重装。
-
-### 只想在某个项目里临时用
+所有数据图渲染器采用统一调用方式——传入 `ax` 则绘制在指定子图上，省略则自动创建画布，均返回 `ax`（支持位置参数或 `data={...}`）：
 
 ```python
-import sys; sys.path.insert(0, r"D:/path/to/academic-figures")
-import academic_fig as afg
+ax = afg.plots.line(ax, years, series, ylabel="准确率（%）")
+ax = afg.plots.line(years, series)     # 自动创建画布，可通过 ax.figure 获取 Figure
 ```
-
-或
-
-```bash
-pip install -e D:/path/to/academic-figures
-```
-
-依赖只有 **numpy + matplotlib**（Python ≥ 3.10）。`pandas` 可选：装了能直接传 DataFrame，
-没装时所有示例走标准库 `csv`。
-
----
-
-## 风格约定（这就是"像不像"的全部）
-
-| 维度 | 取值 | 谁在保证 |
-|---|---|---|
-| 背景 | 纯白 `#FFFFFF`，无网格、无阴影 | `apply_theme()` |
-| 坐标框 | 四边可见、0.8 pt、墨色 `#1A1A1A` | `style_axes(ax)` |
-| 刻度 | 朝内，主刻度 3.5 pt / 次刻度 2.0 pt，标签 9 pt | `style_axes(ax)` |
-| 字号 | 标题 11（normal）· 轴标签 10 · 刻度/图例 9 · 图注 8.5 | `typography.TEXT_SIZES` |
-| 宽度 | 单栏 3.35 in / 双栏 7.0 in；宽高比 0.6–2.6 | `paper_fig()` / `save()` |
-| 配色 | 只用 `palette.py` 的语义色；禁 `tab10/jet/rainbow` | `checks.py` |
-| 图例 | 无边框、9 pt、`labelspacing=0.35`、自动避开数据 | `legend(ax, loc="auto")` |
-| 导出 | PNG 300 dpi + PDF `fonttype=42`（SVG 可选 `fonttype=none`） | `save()` |
-
-改主题只改一处：`afg.apply_theme(font_size=10, palette="paper-calm", cjk=True)`。
-
-换配色方案**目前只能换框架色**：`apply_theme(palette="journal-cns")` 会改
-墨色/灰阶/底色，并重写 `axes.prop_cycle`（所以裸 `ax.plot` / `ax.bar` 的循环色跟着变）；
-但 `afg.plots.*` 里的语义色（GOOD/BAD/基线/高亮）与 `cmap_seq/div/disc` 色阶
-**始终取 `palette.py` 的 paper-calm 常量**，不会跟着方案走。想要另一套语义色，
-目前需要改 `palette.py`（冻结文件，需团队同意），见「已知限制」。
-
----
-
-## 目录结构
-
-```
-academic-fig-skill/
-├── SKILL.md                 # skill 入口（DSH 读它的 frontmatter 决定何时唤醒）
-├── README.md                # 本文件
-├── screenshots.json         # 市场展示图顺序（插件市场读它，不写就从 README 抓图）
-├── academic_fig/            # 框架本体（只依赖 numpy + matplotlib）
-│   ├── palette.py           # 冻结色板：墨/纸/6 强调色/语义色/3 套色阶
-│   ├── typography.py        # 字体回退、字号白名单、中文+$混排检测
-│   ├── style.py             # apply_theme / style_axes / legend / refline / threshold …
-│   ├── layout.py            # paper_fig / grid_axes / panel / footnote（折行+加高）
-│   ├── export.py            # save（PNG+PDF+SVG，写盘后体检）
-│   ├── checks.py            # check_dir / check_script / Issue（结构化自检）
-│   ├── cli.py               # python -m academic_fig.cli check|list|init
-│   ├── plots/               # 21 个数据图渲染器 + base 原语
-│   └── diagrams/            # 5 个示意图渲染器（architecture/flow/field/geometry/gate）
-├── prompts/                 # 中文提示词库（22 个文件 + index.json 机读索引）
-├── references/              # 7 篇说明：期刊规格/中文排版/雷区/选图/配色/R 对照/为何不用位图
-├── scripts/install_skill.py # 一键安装（复制 / 链接 / 演练 / 幂等）
-├── scripts/check_prompt_skeletons.py # 提示词骨架门：把 prompts/*.md 的 Python 块真跑一遍
-├── examples/
-│   ├── render_plots.py      # 21 张数据图，一条命令跑完 → examples/out/<大类>/
-│   ├── render_showcase.py   # 六面板样张 → assets/style_preview.png
-│   └── data/                # ≤20KB 演示数据（csv/json），物理上合理
-├── assets/                  # 风格样张 + atlas/ 精选参考图（单张 PNG ≤ 600 KB）+ icon-180.png
-└── docs/                    # 架构说明、图表词典
-```
-
----
-
-## API 速查
-
-核心 7 个：
-
-| 函数 | 签名 | 作用 |
-|---|---|---|
-| `apply_theme` | `(palette="paper-calm", cjk=True, font_size=10)` | 设全图 rcParams（白底/无网格/字体/字宽/导出） |
-| `paper_fig` | `(width="single", height=None, ncols=1, nrows=1, **kw) -> (fig, axes)` | 按期刊宽度建画布，返回 fig 与 axes |
-| `panel` | `(ax, label="(a)", title=None, xlabel=None, ylabel=None) -> ax` | 面板标签 + 标题 + 轴标签（幂等） |
-| `footnote` | `(fig, text, **kw) -> Text` | 图注：按渲染宽度折行，必要时把画布加高 |
-| `save` | `(fig, base, formats=("png","pdf"), dpi=300) -> dict[str, Path]` | 导出 + 体检，返回文件路径 |
-| `palette` | 模块 | 色值与色阶（`cmap_seq/div/disc`、`tint`） |
-| `plots` | 模块 | 21 个数据图渲染器 + `base` 原语 |
-
-图元（让手写代码也合规）：`style_axes · axes · legend · refline · reference_circle ·
-threshold · annotate_point · shade_region · square · grid_axes · panel_note · save_all`。
-
-自检：`check_dir · check_script · check_text · has_errors · Issue`。
-常量：`SINGLE=3.35 · DOUBLE=7.0 · WIDTHS`。
-
-**兼容别名**（老脚本原样能跑）：`set_paper_style → apply_theme`、`style_axes → axes`、
-`save_paper_figure → save`、`footnote_wrapped → footnote`、`panel_result → panel_note`、
-`plot_reference_circle → reference_circle`。
-
----
-
-## 数据图：21 个渲染器 / 10 个大类
 
 <!-- cat-table:start -->
 | 大类 | 渲染器 | 提示词 | 用来画什么 |
@@ -276,87 +139,33 @@ threshold · annotate_point · shade_region · square · grid_axes · panel_note
 | 流程与流向 | `sankey` | `prompts/30_cat_flow.md` | 流程与网络类 |
 <!-- cat-table:end -->
 
-渲染器的统一约定：
+### 示意图：5 个声明式渲染器
 
-```python
-ax = afg.plots.line(ax, years, series, ylabel="准确率（%）")   # 传 ax 就画在 ax 上
-ax = afg.plots.line(years, series)                            # 不传就自建 fig（第一个位置参数是 ax）
-fig = ax.figure                                               # 两种写法都能拿到 fig
-```
+示意图由纯 `dict` / JSON 描述结构，自动计算版式与防重叠尺寸（自行创建画布，不接受 `ax` 参数，返回 `ax` 供 `afg.save(ax.figure, ...)` 导出）。完整参数说明见 [`references/diagram-spec-fields.md`](references/diagram-spec-fields.md)，最小 JSON 样例见 `examples/data/diagrams/`。
 
-- 数据可以用位置参数，也可以 `data={...}`；长度不符/空数据会抛**清晰的 `ValueError`**。
-- 只用 `palette` 的颜色；数值标签只标极值/关键点；不画网格。
-- 每个渲染器的 docstring 写了「这张图要让读者看到什么」+ 3 条该类的塌陷点提醒。
-
-```bash
-python -m academic_fig.cli list                 # 看全部图型与用法
-python -m academic_fig.cli list --category ml   # 只看某一类
-```
-
----
-
-## 示意图：5 个渲染器
-
-| 类 | api | spec 关键字段（真实键名） | 示例产物 |
-|---|---|---|---|
-| 框架与结构 | `afg.diagrams.architecture(spec, width="double")` | `layers=[{name, note, nodes:[{label, note, highlight}]}]`、`links=[{from, to, label}]`、`auto_cols`、`route` | `examples/out/diagrams/fig01_arch_layers.png` |
-| 流程与时序 | `afg.diagrams.flow(spec)` | `direction="v"/"h"`、`lanes`、`nodes=[{id, kind, row, col, label}]`、`edges=[{from, to, label}]` | `examples/out/diagrams/fig03_flow_vertical.png` |
-| 场量与响应面 | `afg.diagrams.field(spec, kind="surface3d")` | `kind`（`contourf`/`contour`/`both`/`surface3d`/`scatter`）、`x/y`（`{min,max,n}`）、`field`、`labels`、`levels` | `examples/out/diagrams/fig05_field_gaussian.png` |
-| 几何与覆盖 | `afg.diagrams.geometry(spec)` | `x/y`（含 `label`/`unit`）、`regions`、`circles`、`stations`、`keypoints`、`scale_bar` | `examples/out/diagrams/fig07_geometry_coverage.png` |
-| 门限与权衡 | `afg.diagrams.gate(spec)` | `kind="pareto"/"band"`、`cloud`、`pareto`、`thresholds`、`runs`、`ideal` | `examples/out/diagrams/fig09_gate_pareto.png` |
-
-它们都返回 `ax`（`ax.figure` 可直接交给 `afg.save`），**不吃 `ax` 参数**——示意图
-自己建整幅图（版式要先算，和 `paper_fig` 的固定网格冲突）。spec 也可存成 JSON 复用：
-`examples/data/diagrams/*.json` 是最小样例。`architecture()` 会先算版式，
-高度装不下会直接报「至少需要 4.26in」，而不是画出重叠的框。
-下表五段都在 `examples/readme_diagram_examples.py` 里原样跑（产物 `examples/out/readme/`）。
+| 类型 | 入口 API | 适用场景 | 示例脚本 |
+| --- | --- | --- | --- |
+| 框架与结构 | `afg.diagrams.architecture(spec, width="double")` | 分层方法框架、系统模块与数据流 | `examples/data/diagrams/arch_layers.json` |
+| 流程与时序 | `afg.diagrams.flow(spec)` | 纵向/横向流程、泳道、条件分支与回流 | `examples/data/diagrams/flow_vertical.json` |
+| 场量与响应面 | `afg.diagrams.field(spec, kind="surface3d")` | 填色等高线、三维曲面、空间场分布 | `examples/data/diagrams/field_gaussian.json` |
+| 几何与覆盖 | `afg.diagrams.geometry(spec)` | 可达范围、站点覆盖、等比例几何示意 | `examples/data/diagrams/geometry_coverage.json` |
+| 门限与权衡 | `afg.diagrams.gate(spec)` | 帕累托前沿、阈值扫描、多指标鲁棒性带 | `examples/data/diagrams/gate_pareto.json` |
 
 ```python
 import json, academic_fig as afg
 
-afg.apply_theme()                     # 一定先套风格，否则中文全是方框
+afg.apply_theme()
 spec = json.load(open("examples/data/diagrams/arch_layers.json", encoding="utf-8"))
-ax = afg.diagrams.architecture(spec, width="double",
-                               note="数据来源：自绘；口径：模块仅表层级关系")
-afg.save(ax.figure, "fig05_framework")          # → fig05_framework.png/.pdf（单栏宽）
+ax = afg.diagrams.architecture(spec, width="double", note="数据来源：自绘；口径：模块仅表层级关系")
+afg.save(ax.figure, "fig05_framework")
 ```
 
----
+<details>
+<summary><strong>展开查看全谱系图表词典覆盖度（14 大类 / 约 200 种图）</strong></summary>
 
-## 提示词库怎么用
+<br>
 
-`prompts/` 是给**模型**看的规范，不是给代码 import 的。组织方式是「按大类」：
-先读全局系统提示词，再用 `10_intake.md` 把需求收口，然后按图类读对应的 `30_cat_*.md`
-（示意图读 `40_diagram_*.md`），最后用 `50_negative.md` + `60_rubric.md` 自检。
-
-`prompts/index.json` 是机器索引，把「大类 → 提示词文件 → 该用哪些 api」串起来。
-**不要在代码里硬编码提示词文件名**，读 `index.json` 即可：
-
-```python
-import json
-idx = {it["category"]: it for it in json.load(open("prompts/index.json", encoding="utf-8"))}
-entry = idx["ml"]
-print(entry["file"], entry["api"])     # prompts/30_cat_ml.md  ['academic_fig.plots.roc', …]
-```
-
-**骨架门（改完提示词必须跑）**：`prompts/*.md` 里每段 ```` ```python ```` 都是**可执行模板**。
-`scripts/check_prompt_skeletons.py` 把它们逐段抽到临时目录真跑一遍（缺 `apply_theme()` 自动补、
-`examples/data/` 一起拷进去），判据是 `rc==0` 且 stderr 里没有「缺字形 / 公式语法错 / TypeError」：
-
-```bash
-python scripts/check_prompt_skeletons.py                 # 全绿 exit 0；失败逐条打印 文件:行 → rc → 首错行
-python scripts/check_prompt_skeletons.py --list          # 只列骨架，不执行
-python scripts/check_prompt_skeletons.py --only 30_cat_omics --keep   # 单篇排查，保留现场
-```
-
-编造 spec 键、写不存在的 `ax=` 参数、`$...$` 里夹中文，都会当场红——不用等复评。实在跑不了的
-骨架在脚本的 `EXEMPT` 里显式登记「文件名: 原因」，**默认必须能跑**，不用「跳过」掩盖。
-它和 `diagrams/_guard.py`（未 `apply_theme` 自动补、未知 spec 键 ValueError）是一对：
-`_guard` 管运行时，这道门管文档里的示例。
-
----
-
-## 图表词典覆盖度（`docs/图表词典.md` 的 14 大类）
+没有专用渲染器不代表无法绘制：`apply_theme()` + `style_axes(ax)` 可兜底其余所有 matplotlib 图形。第 13 类（显微/影像等位图本身）与第 14 类（科研三线表）不在本框架职责范围内，详见 [`references/why-not-native-png.md`](references/why-not-native-png.md)。
 
 <!-- coverage-table:start -->
 | 词典大类 | 直接支持 | 没有专属渲染器时怎么办 |
@@ -377,166 +186,189 @@ python scripts/check_prompt_skeletons.py --only 30_cat_omics --keep   # 单篇�
 | 14 科研表格 | 不支持（不是图） | 用 Word/LaTeX 三线表；本 skill 只出图 |
 <!-- coverage-table:end -->
 
-**没有专用渲染器 ≠ 画不出来**。`apply_theme()` + `style_axes(ax)` 两支原语接管了
-配色/字体/线宽/刻度/图例，剩下只需要你用 matplotlib 表达结论：
-
-```python
-afg.apply_theme(); fig, ax = afg.paper_fig("single")
-ax.plot(x, y, color=afg.palette.CATEGORICAL[0], lw=1.0)   # 换掉这一行就是另一种图
-afg.style_axes(ax); afg.panel(ax, xlabel="…", ylabel="…")
-afg.footnote(fig, "数据来源：…；口径：…"); afg.save(fig, "fig07_custom")
-```
-
-第 13 类（图像型科研结果）和第 14 类（科研表格）本 skill 不做：前者是位图数据本身，
-后者请用 Word/LaTeX 三线表。理由见 [references/why-not-native-png.md](references/why-not-native-png.md)。
+</details>
 
 ---
 
-## CLI
+## 样张展示
 
-```bash
-python -m academic_fig.cli check --dir examples/out --strict     # 体检产物：尺寸/dpi/PDF/配色/命名
-python -m academic_fig.cli check --dir examples/out --script make_figs.py   # 顺带静态检查生成脚本
-python -m academic_fig.cli check --dir examples/out --json        # 机读输出（接 CI）
-python -m academic_fig.cli list                               # 列图型与用法
-python -m academic_fig.cli list --category distribution       # 只看一类
-python -m academic_fig.cli init --example roc --out demo/     # 生成可运行的起步脚本
-```
-
-`check` 的退出码：没有 error → 0；有 error → 1（不加 `--strict` 时「命名不规范」只算 warning，加了才算 error）。
-它查这些：宽高比 0.6–2.6 · PNG dpi ≥ 300 · 同名 PDF 是否存在 · 配色是否越界 ·
-`figNN_名称` 命名 · 脚本里是否 `apply_theme` · 是否用了 `tab10/jet/rainbow` ·
-字号是否在白名单 · 中文与 `$…$` 是否混排 · 字形是否缺失（真实渲染探针）·
-脚本是否把 `font.family` 换成无中文字体（`font-family`，探针查不出这一种）。
-
-> 纯图目录（没有 `.py`）只能验前五项，结论行打 `△ 未发现问题（字形/混排：未检查）`；
-> `△` 表示只验了一部分，`✓` 才是全验过。要验字形就把生成脚本放进该目录。
-
-`init` 生成的脚本立即可跑，且已经包含 L1 五项（主题/画布/渲染器/图注/导出）：
-
-```bash
-python -m academic_fig.cli init --example bar --out demo/
-python demo/fig01_bar.py
-```
-
----
-
-## 与三个源包的关系
-
-| 来源 | 提供了什么 | 在本仓库的去向 |
-|---|---|---|
-| 项目图脚本（A） | 实际项目里的出图脚本、`plot_style.py` | `academic_fig/style.py` + `layout.py` 的语义；字体候选从 WSL 挂载路径改成 Windows 优先 |
-| 论文图表风格模板（B） | `set_paper_style / style_axes / save_paper_figure / footnote_wrapped` | 改名保留（见上「兼容别名」）；`footnote_wrapped` 的逐字符测宽换成「缓存 renderer + 二分」，快两个数量级 |
-| 科研绘图 QA skill（C） | 5 个 `check_*.py`（尺寸/字号/配色/导出/编排） | 合并进 `academic_fig/checks.py`，从「print PASS/FAIL」改成结构化 `Issue` + 退出码 |
-
-这三个源包是构建本仓库时的参考材料，不随本仓库分发。其中 C（QA skill）源自一个
-以 **Apache-2.0** 许可发布的第三方包；本仓库对它只做改写与合并（`academic_fig/checks.py`），
-按 Apache-2.0 的要求保留来源与署名，并随本仓库整体以 **GPL-3.0-or-later** 发布
-（Apache-2.0 与 GPLv3 兼容）。A、B 为作者自有的项目脚本与风格模板。
-
-**相对源包的实质改动**（不是简单搬运）：
-
-1. **字体**：A/B 都写死 WSL 挂载的字体路径（在 Windows 上无效），改为「Windows → Linux/Noto」探文件回退。
-2. **图注**：B 的 `footnote` 用固定 `y=0.006`，长图注必压刻度；改为「先量占位 → 不够就加高画布 → 按渲染宽度折行 → 放在最低图元下方 0.07 in」。
-3. **图例**：`loc="best"` 只看线不看散点，常压数据；改为四角打分（压点数 + 文字相交数）+ 必要时挪到框外。
-4. **检查**：C 的检查返回 `(name, passed, messages)` 并 print；改为 `Issue(code, severity, file, message, fix_hint)`，可 JSON 输出、可挂 CI。
-5. **配色判定**：从「正则查禁用色名」升级为「解 PNG 像素色相 + 与 palette 比对（含抗锯齿混色容差）」，不再误报，也抓得到手写 hex。
-6. **新增**：`plots/` 21 个渲染器、`diagrams/` 5 个示意图、`cli`、`checks.check_dir`、`examples/`。
-
----
-
-## 已知限制
-
-- **不做统计**：显著性、CI、AUC 之类的数值要你先算好再传进来（框架只负责画得对）。
-- **配色自检用「最近色距」**：判据是「成片彩色像素的 RGB 与 palette 允许色（基色、浅色、`tint()` 各档、色阶停靠色、两色叠加线）的最近距离 ≤ 28/255」；不足 400px 或占比 <0.5% 的零散像素不报（抗锯齿/叠加噪点）。照片类素材不要混进 `check --dir` 的目录，会被当成越界色。
-- **`apply_theme(palette=…)` 只改框架色**：影响文字/脊线/网格/图例边与 `axes.prop_cycle`（不指定颜色的折线依次取色）；`plots.*` 的语义色与 `cmap_*` 恒取 paper-calm 常量，要整幅换色得改 `palette.py`（冻结文件，需团队同意）。
-- **图例自动避让是启发式**：极端密集的散点图上仍可能压到少数点，必要时显式 `loc="lower right"` 或 `bbox_to_anchor`。
-- **框架图有最小高度**：`diagrams.architecture()` 内容多时要求 ≥4.26 in，装不下会直接报错（这是防止重叠的保护）。
-- **示例数据是造的**：`examples/data/*` 为演示版式而构造，物理上合理但不是真实实验，图注已注明；样张面板 (e) 的分布也是合成的（n=48/组，双峰，种子固定）。
-- **位图体积按 600 KB/张 预算**：`assets/style_preview.png` 是六面板 300 dpi 位图，实测 453 KB；单张上限 600 KB，`assets/` 合计 2.1 MB（20 个文件，bundle 上限 20 MB）。体积由内容密度决定，减面板或降 dpi 都会伤到「一眼看清风格」这个用途，所以按 600 KB 定档；论文插图本身（`paper_fig` 单/双栏）通常 70–200 KB。
-- **第 13/14 类不做**：见上「图表词典覆盖度」。
-- **macOS 需自装中文字体**：字体回退是「Windows `C:\Windows\Fonts` → Linux/Noto → **族名兜底**」。
-  macOS 上 `Songti.ttc` / `PingFang.ttc` 的实际路径随系统版本漂移（`/System/Library/Fonts`
-  或 `.../Supplemental`），框架会先按文件注册、再按**族名**（`Songti SC`、`PingFang SC`、
-  `STHeiti`、`Heiti SC`）逐字回退；两者都落空时中文会变方框。此时装一个 Noto：
-  `brew install --cask font-noto-serif-cjk-sc`，或把任意 `.ttc` 放到 `/Library/Fonts/`，
-  然后 `python -c "import academic_fig as afg; print(afg.typography.font_status())"` 确认
-  `cjk` 非空。Linux 同理（`sudo apt install fonts-noto-cjk`）。
-- **`journal-cns` 配色不受自检覆盖（只影响「没走语义色」的那部分）**：`check --dir` 的允许色集合
-  只含 paper-calm 体系。所以——
-  - **不会报**：图里用的是语义色（`afg.palette.BLUE`、`afg.palette.GOOD`、`afg.palette.CLAY`…）或走
-    `paper_fig` + 默认 `prop_cycle`（它仍给 paper-calm 的 6 个分类色）；
-  - **会报**：把你手写的某刊 hex（如 `#00549F`）直接塞进 `color=`，或让 `apply_theme("journal-cns")`
-    改了 `prop_cycle` 后画多序列图——这些颜色不在允许集合里，会被判「配色不在 palette 内」。
-  这是刻意保留的诚实边界（该方案本就是迁就某刊既有配色），不是 bug；要它也别报，只能把该刊色值
-  并进 `checks._allowed_colors()`。
-
----
-
-## FAQ
-
-**Q：我已经有一堆手写 matplotlib 脚本，怎么统一风格？**
-只在开头加两行（`afg.apply_theme()` + 把 `plt.subplots` 换成 `afg.paper_fig`），
-在画完的地方加 `afg.style_axes(ax)`，最后 `afg.save(fig, "figNN_x")`。
-其余代码不用动，`check --script` 会告诉你还差什么。
-
-**Q：图例总是压住数据点怎么办？**
-用 `afg.legend(ax, loc="auto")`，它对四个角分别算「压住几个点 + 和几个已有文字相交」取最小；
-四角都占就自动挪到画框外并抬高标题。
-
-**Q：中文显示成方框？**
-`apply_theme()` 必须在建 fig **之前**调；`afg.typography.font_status()` 会打印实际命中的字体文件。
-如果 `cjk` 为空，说明这台机器没装中文字体（Windows 一般自带宋体/黑体）。
-
-**Q：为什么我的 `$R^2$` 和图注里的中文一起变方框？**
-matplotlib 的 mathtext 只有 ASCII 字形，`$…$` 里不能有汉字。用 `R²`，或
-`afg.typography.text_safety(text)["rewritten"]` 让它帮你改。
-
-**Q：能出 SVG 吗？**
-`afg.save(fig, "fig03_x", formats=("png", "pdf", "svg"))`，SVG 用 `fonttype=none`（文本可再编辑）。
-
-**Q：图注太长被裁掉？**
-`afg.footnote()` 会按渲染宽度折行，并在需要时**把画布加高**（保持绘图区尺寸不变），不会裁也不会压刻度。
-
-**Q：`check --strict` 报了 naming warning，必须改吗？**
-建议改（`figNN_名称`）。`naming` 是 warning 不是 error，`--strict` 只对 error 过敏。
-
----
-
-## 参考图（`assets/atlas/`）
-
-八张直接由本框架产出、未经后期处理的样张，用来对照「什么算对」。
-每张都附同名 PDF（矢量、`fonttype=42`），两者都在 `assets/atlas/` 里。
+以下 8 张图全部由本框架直接渲染，未经任何后期修图，均附带同名矢量 PDF（位于 [`assets/atlas/`](assets/atlas/)）：
 
 | | |
-|---|---|
-| ![分组比较](assets/atlas/fig01_bar.png) 分组比较（误差棒 + 显著性括号 + 一柱强调） | ![趋势](assets/atlas/fig02_line.png) 多序列趋势（虚实区分 + ±1 SD 带） |
-| ![分布](assets/atlas/fig03_violin.png) 分布形状（小提琴 + 抖动散点 + 中位/四分位） | ![关系](assets/atlas/fig04_scatter.png) 关系与回归（背景点云 + 分组 + 拟合线） |
-| ![ROC](assets/atlas/fig05_roc.png) 模型评估（ROC + AUC 进图例 + 对角参考线） | ![热图](assets/atlas/fig06_heatmap.png) 表达矩阵（行内 z-score + 双色阶） |
-| ![生存](assets/atlas/fig07_km.png) 生存曲线（阶梯 + 删失刻度 + 风险人数表） | ![框架图](assets/atlas/fig08_architecture.png) 框架图（墨线 + 白纸 + 低饱和强调） |
+| :---: | :---: |
+| ![分组比较](assets/atlas/fig01_bar.png)<br>**分组比较** — 误差棒 + 显著性括号 + 单柱强调 | ![趋势](assets/atlas/fig02_line.png)<br>**多序列趋势** — 线型区分 + ±1 SD 置信带 |
+| ![分布](assets/atlas/fig03_violin.png)<br>**分布形状** — 小提琴 + 抖动散点 + 四分位 | ![关系](assets/atlas/fig04_scatter.png)<br>**关系与回归** — 背景点云 + 分组 + 拟合线 |
+| ![ROC](assets/atlas/fig05_roc.png)<br>**模型评估** — ROC 曲线 + AUC 图例 + 对角参考线 | ![热图](assets/atlas/fig06_heatmap.png)<br>**表达矩阵** — 行内 z-score + 双向发散色阶 |
+| ![生存](assets/atlas/fig07_km.png)<br>**生存曲线** — 阶梯曲线 + 删失刻度 + 风险人数表 | ![框架图](assets/atlas/fig08_architecture.png)<br>**系统框架图** — 白纸墨线 + 低饱和核心强调 |
+
+---
+
+## 风格规范
+
+`paper-calm` 视觉规范由代码强制保证，无需手动调参：
+
+| 维度 | 规范取值 | 对应接口 |
+| --- | --- | --- |
+| 画布背景 | 纯白 `#FFFFFF`，无背景网格、无阴影 | `apply_theme()` |
+| 坐标轴框 | 四边封闭、0.8 pt、墨色 `#1A1A1A` | `style_axes(ax)` |
+| 刻度 | 朝内（主刻度 3.5 pt / 次刻度 2.0 pt），刻度标签 9 pt | `style_axes(ax)` |
+| 字号阶梯 | 标题 11 pt（不加粗）· 轴标签 10 pt · 刻度/图例 9 pt · 图注 8.5 pt | `typography.TEXT_SIZES` |
+| 期刊栏宽 | 单栏 3.35 in / 双栏 7.0 in，合规宽高比 0.6–2.6 | `paper_fig()` / `save()` |
+| 语义配色 | 仅使用 `palette.py` 语义色与色阶；禁用 `tab10` / `jet` / `rainbow` | `palette` / `checks.py` |
+| 图例 | 无边框、9 pt、`labelspacing=0.35`，自动避让数据点与文字 | `legend(ax, loc="auto")` |
+| 导出格式 | PNG 300 dpi + PDF（`fonttype=42` 嵌入字体，可选 SVG `fonttype=none`） | `save()` |
+
+---
+
+## 核心 API 速查
+
+| 接口 | 签名 | 说明 |
+| --- | --- | --- |
+| `apply_theme` | `(palette="paper-calm", cjk=True, font_size=10)` | 配置全局 `rcParams`（配色、字体栈、字号与导出参数） |
+| `paper_fig` | `(width="single", height=None, nrows=1, ncols=1, **kw)` | 按期刊栏宽与安全宽高比创建 `(fig, axes)` |
+| `panel` | `(ax, label="(a)", title=None, xlabel=None, ylabel=None)` | 统一设置面板编号、标题与坐标轴标签（幂等） |
+| `footnote` | `(fig, text, **kw)` | 按渲染宽度自动折行并在必要时增高画布 |
+| `save` | `(fig, base, formats=("png", "pdf"), dpi=300)` | 双格式导出并执行写盘后基础体检 |
+| `figure_paths` | `(save_result)` | 从 `save()` 返回字典中提取纯文件路径字典 |
+| `palette` | 模块 | 语义色、分类色、`tint()` 及顺序/发散/离散色阶（`cmap_seq` / `cmap_div` / `cmap_disc`） |
+
+<details>
+<summary><strong>更多图元、自检接口与兼容别名</strong></summary>
+
+- **排版与标注原语**：`style_axes`、`axes`、`legend`、`refline`、`reference_circle`、`threshold`、`annotate_point`、`shade_region`、`square`、`grid_axes`、`panel_note`、`save_all`
+- **程序化自检**：`check_dir`、`check_script`、`check_text`、`has_errors`、`Issue`
+- **栏宽常量**：`SINGLE = 3.35`、`DOUBLE = 7.0`、`WIDTHS`
+- **旧版兼容别名**：`set_paper_style → apply_theme`、`save_paper_figure → save`、`footnote_wrapped → footnote`、`panel_result → panel_note`、`plot_reference_circle → reference_circle`
+
+</details>
+
+---
+
+## CLI 与出图自检
+
+安装 Python 包后可直接使用 `afig` 命令（或通过 `python -m academic_fig.cli` 调用）：
+
+```bash
+# 查看全部内置图型或按大类筛选
+afig list
+afig list --category ml
+
+# 生成可直接运行的起步脚本（含完整五步模板）
+afig init --example roc --out demo/
+
+# 对输出目录执行投稿体检（退出码 0 通过 / 1 存在 error，可直接接入 CI）
+afig check --dir examples/out --strict
+afig check --dir examples/out --script make_figs.py --json
+```
+
+**自检覆盖项**：
+- **图像产物检查**：宽高比（0.6–2.6）、PNG 分辨率（≥ 300 dpi）、同名矢量 PDF 是否齐全、像素级配色合规性、`figNN_名称` 命名规范。
+- **脚本静态检查**（目录内含 `.py` 或通过 `--script` 指定时启用）：是否调用 `apply_theme()`、是否误用禁用色表、字号是否越界、中文与 `$...$` 混排检测、真实字形缺失探针，以及是否覆写了无中文字形的 `font.family`。
+
+> 纯图目录仅校验产物项（结论行标记 `△` 表示静态项未检查）；同时传入生成脚本并全部通过时标记 `✓`。
+
+---
+
+## AI Skill 与项目结构
+
+`prompts/` 目录为大模型提供按图类拆分的中文出图规范，`prompts/index.json` 为机读索引，将「图类 → 提示词文件 → 对应 API」动态关联：
+
+```python
+import json
+
+idx = {it["category"]: it for it in json.load(open("prompts/index.json", encoding="utf-8"))}
+entry = idx["ml"]
+print(entry["file"], entry["api"])  # prompts/30_cat_ml.md  ['academic_fig.plots.roc', ...]
+```
+
+<details>
+<summary><strong>查看仓库目录结构</strong></summary>
+
+```text
+py-academic-fig-skill/
+├── SKILL.md                  # AI Skill 入口（触发条件、工作流与风格红线）
+├── academic_fig/             # Python 框架核心（仅依赖 numpy + matplotlib）
+│   ├── palette.py            # 冻结色板与色阶定义
+│   ├── typography.py         # 跨平台字体回退、字号白名单与混排检查
+│   ├── style.py              # apply_theme / style_axes / legend / 标注原语
+│   ├── layout.py             # paper_fig / grid_axes / panel / footnote
+│   ├── export.py             # 多格式导出与写盘后体检
+│   ├── checks.py             # 结构化 Issue 自检引擎
+│   ├── cli.py                # afig 命令行入口
+│   ├── plots/                # 21 个数据图渲染器 + base 原语
+│   └── diagrams/             # 5 个声明式示意图渲染器
+├── prompts/                  # 22 份中文提示词 + index.json 机读索引
+├── references/               # 期刊规格、中文排版、雷区清单、选图路由与 R 对照
+├── examples/                 # render_plots / render_diagrams / render_showcase 与演示数据
+├── assets/                   # 风格样张 style_preview.png + atlas/ 精选参考图
+├── scripts/                  # 安装脚本、文档零漂移核对与提示词骨架验证
+└── docs/                     # 架构说明与图表词典
+```
+
+</details>
+
+---
+
+## 常见问题与使用边界
+
+<details>
+<summary><strong>中文显示成方框怎么办？（含 macOS / Linux 字体说明）</strong></summary>
+
+1. 确保 `afg.apply_theme()` 在创建 `Figure` **之前**调用。
+2. 运行 `python -c "import academic_fig as afg; print(afg.typography.font_status())"` 查看实际命中的字体文件。
+3. 若 `cjk` 为空（常见于精简 Linux 容器或部分 macOS 环境），安装 Noto CJK 字体即可：
+   - **macOS**：`brew install --cask font-noto-serif-cjk-sc`
+   - **Ubuntu / Debian**：`sudo apt install fonts-noto-cjk`
+
+</details>
+
+<details>
+<summary><strong>为什么带 `$R^2$` 的中文标签整段变成了方框？</strong></summary>
+
+matplotlib 的 mathtext 引擎仅含 ASCII 字形，`$...$` 内部不能出现汉字。建议直接改用 Unicode（如 `R²`），或调用 `afg.typography.text_safety(text)["rewritten"]` 自动改写。
+
+</details>
+
+<details>
+<summary><strong>如何避免图例压住数据点或长图注被裁切？</strong></summary>
+
+- **图例避让**：使用 `afg.legend(ax, loc="auto")`，它会对四角进行点数与文字重叠打分，必要时自动移至框外；极端密集散点图可手动指定 `loc` 或 `bbox_to_anchor`。
+- **长图注**：使用 `afg.footnote(fig, text)`，它会按实际渲染宽度自动折行并在需要时增高画布，保持绘图区比例不变。
+
+</details>
+
+<details>
+<summary><strong>如何导出可再编辑的 SVG？</strong></summary>
+
+调用 `afg.save(fig, "fig03_x", formats=("png", "pdf", "svg"))`，SVG 默认使用 `fonttype=none` 以保留可编辑文本对象。
+
+</details>
+
+**明确边界**：
+- **不做统计计算**：显著性检验、置信区间、AUC 等统计量需预先计算后传入，框架只负责严谨呈现。
+- **配色自检基于 `paper-calm`**：像素色距校验针对默认语义色体系；若使用自定义期刊色值（如 `journal-cns` 覆盖的 `prop_cycle`）或混入照片素材，配色检查会按越界色告警。
+- **架构图最小高度保护**：`diagrams.architecture()` 会预计算布局高度，画布过矮时直接报错而非绘制重叠节点。
+- **示例数据仅用于演示**：`examples/data/` 均为物理合理但非真实实验的合成数据。
 
 ---
 
 ## 相关文档
 
-- [SKILL.md](SKILL.md) —— skill 入口（何时用、三步工作流、风格红线）
-- [references/journal-specs.md](references/journal-specs.md) —— 尺寸/字号/格式/期刊对照
-- [references/typography-cjk.md](references/typography-cjk.md) —— 字体回退与中文排版
-- [references/pitfalls.md](references/pitfalls.md) —— P-01…P-14 塌陷点清单
-- [references/figure-routing.md](references/figure-routing.md) —— 什么结论配什么图
-- [references/palette-role.md](references/palette-role.md) —— 色板语义与色阶选择
-- [references/r-cheatsheet.md](references/r-cheatsheet.md) —— ggplot2 → academic_fig 对照
-- [references/why-not-native-png.md](references/why-not-native-png.md) —— 为什么不让 AI 直接出 PNG
-- [docs/ARCH.md](docs/ARCH.md) —— 架构与验收；[docs/图表词典.md](docs/图表词典.md) —— 14 大类约 200 种图
+- [SKILL.md](SKILL.md) — AI Skill 入口：铁律、选图路由与五步工作流
+- [references/journal-specs.md](references/journal-specs.md) — 期刊栏宽、字号与导出格式对照
+- [references/typography-cjk.md](references/typography-cjk.md) — 中文字体回退与混排避坑指南
+- [references/palette-role.md](references/palette-role.md) — 色板语义分工与色阶选用
+- [references/figure-routing.md](references/figure-routing.md) — 从研究结论反推最合适的图型
+- [references/pitfalls.md](references/pitfalls.md) — 高频论文绘图塌陷点清单（P-01 … P-14）
+- [references/r-cheatsheet.md](references/r-cheatsheet.md) — ggplot2 到 `academic_fig` 的写法对照
+- [references/why-not-native-png.md](references/why-not-native-png.md) — 为什么不让 AI 直接生成论文位图
+- [docs/ARCH.md](docs/ARCH.md) / [docs/图表词典.md](docs/图表词典.md) — 框架架构与 14 大类图表词典
 
 ---
 
-## 许可
+## 许可证与致谢
 
-本项目以 **GNU General Public License v3.0 or later**（GPL-3.0-or-later）发布，
-全文见 [LICENSE](LICENSE)。你可以自由使用、修改和再分发；再分发（含修改后的版本）
-必须以同一许可公开完整源码。若要在闭源项目中引用本框架的**风格约定与提示词**（不带代码），
-请只参考 `SKILL.md`、`prompts/`、`references/` 这些文本，并在致谢中注明来源。
+本项目以 **GNU General Public License v3.0 or later（GPL-3.0-or-later）** 开源发布，全文见 [LICENSE](LICENSE)。
 
-- 上游第三方材料（Apache-2.0）的署名见上节「与三个源包的关系」。
-- 包名 `academic-figures`、命令 `afig`、skill 名 `academic-figures`。
+- **上游致谢**：`academic_fig/checks.py` 中的部分质量检查思路改写并整合自一份以 **Apache-2.0** 许可发布的第三方科研绘图 QA 工具（Apache-2.0 与 GPLv3 兼容），按协议保留其来源署名并随本仓库整体以 GPL-3.0-or-later 发布。
+- **规范文本复用**：若仅在闭源项目中参考本仓库的风格约定与提示词文本（`SKILL.md`、`prompts/`、`references/`，不含代码），请在致谢中注明出处。
