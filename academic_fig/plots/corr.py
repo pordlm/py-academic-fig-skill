@@ -11,6 +11,7 @@
 """
 from __future__ import annotations
 
+import warnings
 from typing import Any, Mapping, Sequence
 
 import numpy as np
@@ -156,6 +157,14 @@ def corr(ax=None, matrix: Any | None = None, *, data: Any | None = None,
         C, n = corrcoef(M, method=method, constant_policy=constant_policy)
         p = C.shape[0]
     elif _looks_like_corr(M) and M.shape[0] == M.shape[1]:
+        # 自动识别只在「看起来确实是相关矩阵」时命中，但它仍可能把一张恰好对称、
+        # 对角线为 1 的样本矩阵误认成相关矩阵（那会静默改变图的含义）。给出警告，
+        # 让调用方显式写 is_correlation_matrix=True/False。
+        warnings.warn(
+            "corr(): 未指定 is_correlation_matrix，按「方阵 + 对称 + 对角线为 1」"
+            "自动判定为「已是相关矩阵」。若 matrix 其实是样本 × 变量矩阵，"
+            "请显式传 is_correlation_matrix=False（或 True 明确当相关矩阵用）。",
+            UserWarning, stacklevel=2)
         C, n = M, 0
         p = M.shape[0]
     else:

@@ -25,6 +25,11 @@
 文件（例如废弃的样张 PNG/PDF）会从目标目录里一并删除，删空了的子目录也清掉。只删
 「上次装过」的路径，用户自己往目标目录里放的文件不动。``--dry-run`` 会先把将删清单打出来。
 
+修剪是**保守**的：清单里的每条路径都要先过词法检查（拒绝绝对路径、盘符、``..``），
+再用真实路径确认它仍在安装目录内（挡住「中间目录是指向外部的链接」）；过不了的一律
+保留。清单损坏（不是合法 JSON）或来自没有 ``paths`` 字段的旧版本时，**一条都不删**，
+只打印告警——清理干净永远排在「不误删」之后。
+
 重复执行是幂等的：复制模式会先算一遍文件清单指纹，和上次装好的完全一致就直接说
 「已是最新」，不会动目标目录。
 
@@ -47,6 +52,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -60,7 +66,8 @@ MANIFEST_NAME = ".install-manifest.json"
 COPY_DIRS = ("academic_fig", "prompts", "references", "examples", "assets")
 # BUILD.json 是构建戳的唯一来源（`academic_fig.__build__` 读它）：漏装会让安装版的
 # `__build__` 退化成 ``__version__ + '+00000000-0000'``，与仓库对不上，排障时误判版本
-COPY_FILES = ("SKILL.md", "README.md", "pyproject.toml", "BUILD.json")
+# LICENSE 必须跟着走：GPL 要求分发时附带许可证全文，复制安装漏了就是不合规分发
+COPY_FILES = ("SKILL.md", "README.md", "pyproject.toml", "BUILD.json", "LICENSE")
 # 不装：源包、阶段报告、缓存、出图产物
 SKIP_DIR_NAMES = {"_src", "__pycache__", ".git", ".pytest_cache", ".mypy_cache",
                   "out", "reports", ".ipynb_checkpoints"}
@@ -94,6 +101,43 @@ def _is_within(child: Path, root: Path) -> bool:
     try:
         _norm(child).relative_to(_norm(root))
     except ValueError:
+        return False
+    return True
+
+
+#: 清单里的路径只允许「纯相对路径」：绝对路径、盘符、``..``、空段一律拒绝。
+_DRIVE_RE = re.compile(r"^[A-Za-z]:")
+
+
+def safe_relpath(rel: object) -> str | None:
+    """把清单里的一条路径规范化成 POSIX 相对路径；不安全则返回 ``None``。
+
+    ``.install-manifest.json`` 是目标目录里的普通文件，**可以被人改**。修剪陈旧
+    文件时若直接 ``target / rel``，一条 ``../../某人的文件`` 或绝对路径就会让
+    ``--force`` 删掉安装目录之外的东西。所以这里先做纯词法过滤：只接受
+    ``a/b/c`` 这种相对路径，其余（绝对路径、盘符、``..``、``.``、空串）统统拒绝。
+    """
+    if not isinstance(rel, str):
+        return None
+    raw = rel.replace("\\", "/").strip()
+    if not raw or raw.startswith("/") or _DRIVE_RE.match(raw):
+        return None
+    parts = [p for p in raw.split("/") if p not in ("", ".")]
+    if not parts or any(p == ".." for p in parts):
+        return None
+    return "/".join(parts)
+
+
+def _is_inside_real(path: Path, root: Path) -> bool:
+    """``path`` 的**真实路径**（解开符号链接/junction 后）是否仍在 ``root`` 内。
+
+    词法过滤挡不住「中间目录是指向外部符号链接」：``target/link/secret.txt`` 词法上
+    在 target 里，真实路径却在外面。删除前用 realpath 再判一次。
+    """
+    try:
+        real_root = Path(os.path.realpath(root))
+        Path(os.path.realpath(path)).relative_to(real_root)
+    except (OSError, ValueError):
         return False
     return True
 
@@ -310,53 +354,79 @@ def _manifest_paths(manifest: dict[str, object] | None) -> list[str] | None:
 
 
 def stale_paths(target: Path, items: list[tuple[str, Path]],
-                manifest: dict[str, object] | None) -> list[str]:
-    """源码里已经没有、目标目录里却还留着的文件（相对 posix 路径，已排序）。
+                manifest: dict[str, object] | None,
+                *, corrupt: bool = False) -> tuple[list[str], list[str]]:
+    """算出「源码里已经没有、目标目录里却还留着」的文件。
 
-    只认「上次装过」的路径：新版清单记了完整 ``paths``；旧版清单没记，就退化成在
-    我们自己的交付根（``COPY_FILES`` / ``COPY_DIRS``）里扫一遍，不越界碰别的东西。
+    返回 ``(待删清单, 说明/告警)``，两者都是相对 posix 路径/文本。**安全策略优先于
+    清理干净**：
+
+    * 清单损坏（文件在但不是合法 JSON 对象）→ 一条都不删，只告警；
+    * 旧版清单没有 ``paths`` 字段 → 无法确认文件归属，一条都不删，只告警；
+    * 每条路径先过 :func:`safe_relpath`（挡绝对路径/``..``/盘符），再用
+      :func:`_is_inside_real` 挡「中间目录是指向外部的链接」，过不了的一律保留。
     """
     current = {rel for rel, _ in items}
+    if corrupt:
+        return [], ["安装清单损坏（不是合法 JSON）：跳过陈旧文件修剪，"
+                    "目标目录里的文件一个都不删；需要清理请手动删掉该目录后重装"]
     known = _manifest_paths(manifest)
     if known is None:
-        candidates: list[str] = list(COPY_FILES)
-        for name in COPY_DIRS:
-            base = target / name
-            if not base.is_dir():
-                continue
-            for path in base.rglob("*"):
-                if path.is_file():
-                    candidates.append(path.relative_to(target).as_posix())
-    else:
-        candidates = list(known)
-    out: list[str] = []
-    for rel in sorted(set(candidates)):
-        if rel in current or rel == MANIFEST_NAME:
+        if manifest is None:
+            return [], []          # 没有清单：这次只覆盖/新增，没有可修剪的记录
+        return [], ["安装清单来自旧版本（没有 paths 字段）：无法确认哪些文件是本工具装的，"
+                    "跳过陈旧文件修剪；需要清理请先删掉目标目录再重装"]
+    stale: list[str] = []
+    notes: list[str] = []
+    rejected: list[str] = []
+    for rel in sorted(set(known)):
+        safe = safe_relpath(rel)
+        if safe is None:
+            rejected.append(str(rel))
             continue
-        path = target / rel
+        if safe in current or safe == MANIFEST_NAME:
+            continue
+        path = target / safe
+        if not _is_inside_real(path, target):
+            notes.append(f"跳过越界路径（真实路径不在安装目录内）：{safe}")
+            continue
         if path.is_file() or path.is_symlink():
-            out.append(rel)
-    return out
+            stale.append(safe)
+    if rejected:
+        notes.append(f"清单里有 {len(rejected)} 条不安全路径（绝对路径/盘符/..），已忽略并保留："
+                     + "、".join(rejected[:3]) + ("…" if len(rejected) > 3 else ""))
+    return stale, notes
 
 
 def prune_stale(target: Path, stale: list[str], *, dry: bool) -> list[str]:
-    """删掉陈旧文件并清理被删空的目录，返回实际（演练时是「将」）删除的清单。"""
+    """删掉陈旧文件并清理被删空的目录，返回实际（演练时是「将」）删除的清单。
+
+    删除前再验一遍边界：``stale`` 虽然已经过 :func:`stale_paths`，但这里多做一次
+    词法 + 真实路径检查，避免以后有人从别的入口塞路径进来。
+    """
     removed: list[str] = []
     for rel in stale:
-        path = target / rel
+        safe = safe_relpath(rel)
+        if safe is None:
+            print(f"[!] 拒绝删除非法路径：{rel!r}")
+            continue
+        path = target / safe
+        if not _is_inside_real(path, target):
+            print(f"[!] 拒绝删除越界路径：{safe}")
+            continue
         if not (path.is_file() or path.is_symlink()):
             continue
         if not dry:
             try:
                 path.unlink()
             except OSError as exc:      # 只读/占用：报一声继续，不整体失败
-                print(f"[!] 删不掉陈旧文件 {rel}：{exc}")
+                print(f"[!] 删不掉陈旧文件 {safe}：{exc}")
                 continue
-        removed.append(rel)
+        removed.append(safe)
     if not dry:
         for name in COPY_DIRS:
             base = target / name
-            if not base.is_dir():
+            if not base.is_dir() or not _is_inside_real(base, target):
                 continue
             for path in sorted(base.rglob("*"), key=lambda q: len(q.parts), reverse=True):
                 if path.is_dir() and not any(path.iterdir()):
@@ -374,17 +444,25 @@ def write_manifest(target: Path, fp: str, items: list[tuple[str, Path]], mode: s
                # 记全路径：--force 升级时靠它精确修剪「上次装过、这次源码已没有」的文件
                "paths": sorted(rel for rel, _ in items)}
     (target / MANIFEST_NAME).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                                        encoding="utf-8")
+                                        encoding="utf-8", newline="\n")
 
 
-def read_manifest(target: Path) -> dict[str, object] | None:
+def read_manifest(target: Path) -> tuple[dict[str, object] | None, bool]:
+    """读安装清单，返回 ``(清单, 是否损坏)``。
+
+    区分三种状态很重要：**没有清单**（首次安装）和**清单损坏**（被人改坏/写坏）
+    在修剪策略上完全相反——前者没东西可删，后者必须放弃清理、保留全部文件。
+    """
     path = target / MANIFEST_NAME
     if not path.is_file():
-        return None
+        return None, False
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return None
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return None, True
+    if not isinstance(data, dict):
+        return None, True
+    return data, False
 
 
 # --------------------------------------------------------------------------- 主流程
@@ -433,12 +511,15 @@ def main(argv: list[str] | None = None) -> int:
     say(f"[2/4] 待安装 {len(items)} 个文件 / {_total_bytes(items) / 1024:.0f} KB")
 
     exists = target.exists() or target.is_symlink()
-    manifest = read_manifest(target) if exists else None
+    manifest, corrupt = read_manifest(target) if exists else (None, False)
     same = bool(manifest and manifest.get("fingerprint") == fp
                 and manifest.get("mode") == mode and target.exists())
     if mode == "junction" and exists and os.path.realpath(target) == os.path.realpath(REPO):
         same = True          # 链接已经指向本仓库，重跑即「已是最新」
-    stale = stale_paths(target, items, manifest) if (exists and mode == "copy") else []
+    stale, notes = (stale_paths(target, items, manifest, corrupt=corrupt)
+                    if (exists and mode == "copy") else ([], []))
+    for note in notes:
+        say(f"[!] {note}")
 
     if args.dry_run:
         say(f"[3/4] 目标：{target}  （{'已存在' if exists else '不存在'}）")

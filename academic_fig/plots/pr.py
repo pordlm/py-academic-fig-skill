@@ -11,6 +11,7 @@
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Mapping
 
 import numpy as np
@@ -19,6 +20,23 @@ from .. import palette as _pal
 from .. import typography as _typo
 from . import base as _base
 from ._common import as_1d, as_binary_mask, check_len, style_ls
+
+
+@dataclass(frozen=True)
+class PRCurve:
+    """显式的「已算好的 PR 曲线」，用来绕开 ``curves=`` 里二元组的启发式判定。
+
+    ``pr(curves={"A": PRCurve(recall, precision), "B": (y_true, y_score)})``——
+    前者直接画点集，后者按标签与分数现算。两点曲线 ``recall=[0, 1]`` 与「只有两个
+    样本的 0/1 标签」词法上无法区分，显式对象就没有这个歧义。
+
+    ``ap`` / ``prevalence`` 可选：不给时 AP 按 ``Σ(R_i−R_{i−1})·P_i`` 现算。
+    """
+
+    recall: Any
+    precision: Any
+    ap: float | None = None
+    prevalence: float | None = None
 
 
 def _average_precision(recall: np.ndarray, precision: np.ndarray) -> float:
@@ -55,9 +73,12 @@ def _check_supplied_curve(rec: np.ndarray, prec: np.ndarray, *, name: str,
 def _looks_like_curve(a: Any, b: Any) -> bool:
     """判断二元组是「已算好的 (recall, precision)」还是「(y_true, y_score)」。
 
-    决定性依据是第一个数组的取值个数：标签只有两个取值（正/负类），而 recall
-    在曲线里通常远多于两个。两组都在 [0, 1] 内才可能是曲线，所以
-    ``(y_true, y_score)`` 里 y_true 是 0/1、y_score 是概率的情况不会误判。
+    决定性依据是第一个数组的取值：标签只有两个取值（正/负类），而 recall 在曲线里
+    通常远多于两个。**唯一的例外**是只有两点的曲线 ``recall=[0, 1]``——那和「两个
+    样本的 0/1 标签」词法上完全一样，只能靠配套的 precision 区分：``pr_curve``
+    总以 recall=0 / precision=1 开头，所以 ``(0, 1)`` + ``precision[0] == 1``
+    视为曲线。更稳的做法是不传二元组、改传 :class:`PRCurve` 或 ``{"recall":…,
+    "precision":…}``，那两者走的是显式分支，不经过任何启发式。
     """
     try:
         fa = np.ravel(np.asarray(a, dtype=float))
@@ -70,7 +91,10 @@ def _looks_like_curve(a: Any, b: Any) -> bool:
         return False
     uniq_a = np.unique(fa)
     if uniq_a.size <= 2 and bool(np.all((uniq_a == 0.0) | (uniq_a == 1.0))):
-        return False  # 只取 0/1：更像标签向量，交给 pr_curve 去算
+        # 两点曲线 recall=[0, 1]：起点必须是 (0, 1)，否则只能是标签
+        two_point_curve = (fa.size == 2 and fa[0] == 0.0 and fa[1] == 1.0
+                           and abs(float(fb[0]) - 1.0) <= 1e-9)
+        return bool(two_point_curve)
     return True
 
 
@@ -118,10 +142,11 @@ def pr(ax=None, y_true: Any | None = None, y_score: Any | None = None, *,
         真值标签与分数（等长）。
     data : Mapping, optional
         ``{"y_true": …, "y_score": …}`` 或 ``{"curves": {...}}``。
-    curves : Mapping[str, (y_true, y_score) | (recall, precision)], optional
+    curves : Mapping[str, PRCurve | (y_true, y_score) | (recall, precision)], optional
         多条曲线。给 ``(y_true, y_score)`` 由本函数算；给 ``(recall, precision)``
-        点集则直接画（会自动与 ``(y_true, y_score)`` 区分），也可给
-        ``{名: {"recall":…, "precision":…, "ap":…, "prevalence":…}}``。
+        点集则直接画；也可给 ``{名: {"recall":…, "precision":…, "ap":…, "prevalence":…}}``。
+        二元组靠形状猜，两点曲线（``recall=[0, 1]``）容易和标签撞车——结构明确时
+        用 :class:`PRCurve` 或 dict，别用二元组。
         AP 缺省按 ``Σ(R_i−R_{i−1})·P_i`` 现算，不用平均 precision 顶替。
     positive : Any
         正类取值，默认 1。
@@ -148,7 +173,15 @@ def pr(ax=None, y_true: Any | None = None, y_score: Any | None = None, *,
         if not isinstance(curves, Mapping):
             raise ValueError("pr(): curves 必须是 {名称: (y_true, y_score)} 的映射")
         for name, payload in curves.items():
-            if isinstance(payload, Mapping):
+            if isinstance(payload, PRCurve):
+                rec = as_1d(payload.recall, f"curves[{name!r}].recall", caller="pr")
+                prec = as_1d(payload.precision, f"curves[{name!r}].precision", caller="pr")
+                check_len("precision", prec, rec.size, caller="pr")
+                _check_supplied_curve(rec, prec, name=str(name))
+                ap = float(payload.ap) if payload.ap is not None else _average_precision(rec, prec)
+                if payload.prevalence is not None:
+                    prevalence = float(payload.prevalence)
+            elif isinstance(payload, Mapping):
                 if "recall" not in payload or "precision" not in payload:
                     raise ValueError(f"pr(): curves[{name!r}] 缺少 recall/precision 键")
                 rec = as_1d(payload["recall"], f"curves[{name!r}].recall", caller="pr")

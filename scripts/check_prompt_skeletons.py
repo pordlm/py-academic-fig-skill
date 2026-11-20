@@ -12,7 +12,7 @@
 3. 在临时目录里 ``cwd=temp`` 起子进程跑，收集 rc 与 stderr；
 4. 判据：**rc 必须 0**，且 stderr 里
    ``does not have a glyph`` / ``Glyph`` / ``ParseFatalException`` / ``TypeError``
-   出现次数必须为 0（``MERG NOT subset`` 是 PDF 字体子集化的已知噪音，放行）；
+   出现次数必须为 0（``MERG NOT subset`` 是 PDF 字体子集化的已知噪音，放行）。
 5. 失败逐条打印 ``文件:行 → rc → stderr 首行``，exit 1；全绿 exit 0 并报
    「扫了 N 篇 / M 段骨架」。
 
@@ -55,11 +55,12 @@ FAIL_MARKERS: tuple[str, ...] = (
     "ValueError",
 )
 
-#: 已知噪音：matplotlib 的 PDF 字体子集化提示，与骨架正确性无关
+#: 已知噪音：matplotlib 的 PDF 字体子集化提示，与骨架正确性无关。
+#: **不要**把 ``UserWarning: Glyph … missing from font(s)`` 放进来：那正是「中文变方框」
+#: 的报警，放过它等于让缺字形问题混过门禁（0.2.1 及以前就把它错了过滤掉）。
 IGNORE_MARKERS: tuple[str, ...] = (
     "MERG NOT subset",
     "findfont: Font family",
-    "UserWarning: Glyph",
 )
 
 #: 显式豁免名单：``{文件名: 原因}``。**默认必须能跑**，别用「跳过」掩盖问题。

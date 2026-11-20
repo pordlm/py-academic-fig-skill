@@ -1,0 +1,124 @@
+name: CI
+
+# 三件事必须在每次 push 前自动跑：包装得上（wheel / 可 import）、统计口径对、
+# 文档与代码不漂。0.2.1 之前这些全靠本机手跑，回归只能靠人记得。
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: py${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 安装依赖（含中文/数学字体）
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+
+      - name: 版本与构建戳
+        run: |
+          python -c "import academic_fig as afg; print('version', afg.__version__); print('build', afg.__build__)"
+
+      - name: 渲染器注册完整性
+        run: |
+          python -c "
+          from academic_fig import plots
+          missing = [n for n in plots.__all__ if not hasattr(plots, n)]
+          assert not missing, f'__init__ 声明了但未导出：{missing}'
+          print(f'{len(plots.__all__)} 个导出名全部可解析')
+          "
+
+      - name: 统计口径自检
+        run: python scripts/selftest_stats.py
+
+      - name: 安装器修剪安全性自检
+        run: python scripts/selftest_installer.py
+
+      - name: 提示词骨架检查器自检
+        run: python scripts/selftest_prompt_skel.py
+
+      - name: 配色 / 主题 / 图例 / 字形 / 场量导出 自检
+        run: |
+          for f in selftest_color_check selftest_theme selftest_legend selftest_glyph_check selftest_field_export; do
+            echo "== scripts/$f.py"
+            python "scripts/$f.py"
+          done
+
+      - name: 文档与代码一致
+        run: python scripts/check_docs.py
+
+      - name: BUILD 指纹
+        run: python scripts/write_build.py --check
+
+      - name: 示例渲染 + 出图自检
+        run: |
+          python examples/render_plots.py
+          python examples/render_diagrams.py
+          python examples/render_showcase.py
+          python -m academic_fig.cli check --dir examples/out --strict
+
+      - name: 安装演练
+        run: python scripts/install_skill.py --dry-run
+
+      # 提示词骨架要逐段起子进程，最慢；只在 3.12 上跑一遍，其余版本跑上面那些
+      - name: 提示词骨架
+        if: matrix.python-version == '3.12'
+        run: python scripts/check_prompt_skeletons.py --verbose
+
+  wheel:
+    name: wheel 与许可证元数据
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 构建 wheel 并核对元数据
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel --outdir dist
+          python - <<'PY'
+          import glob, zipfile
+          from email.parser import Parser
+
+          whl = glob.glob("dist/*.whl")[0]
+          with zipfile.ZipFile(whl) as zf:
+              names = zf.namelist()
+              meta = Parser().parsestr(zf.read(
+                  [n for n in names if n.endswith("METADATA")][0]).decode("utf-8"))
+          print("wheel:", whl, "| files:", len(names))
+          assert meta["License-Expression"] == "GPL-3.0-or-later", meta["License-Expression"]
+          assert meta["Requires-Python"] == ">=3.10", meta["Requires-Python"]
+          assert any(n.endswith("LICENSE") for n in names), "wheel 缺 LICENSE"
+          assert all(n.startswith(("academic_fig/", "academic_figures")) for n in names), \
+              "wheel 里混入了 skill 资产（应只有 Python 包）"
+          print("License-Expression / License-File / Requires-Python 均正确")
+          PY

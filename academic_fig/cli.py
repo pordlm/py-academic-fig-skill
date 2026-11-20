@@ -215,10 +215,15 @@ _FIGLINE = {
 
 
 def _diagrams():
-    """惰性导入示意图表；没装/没就绪时返回 ``None``（不挡数据图命令）。"""
+    """惰性导入示意图表；模块缺失时返回 ``None``（不挡数据图命令）。
+
+    只吞 ``ImportError``：那是「这个安装里没有 diagrams」的正常降级。示意图模块存在
+    但自己炸了（NameError/TypeError/语法错）属于真 bug，必须原样抛出去，别伪装成
+    「没装这个功能」。
+    """
     try:
         from . import diagrams
-    except Exception:                                       # pragma: no cover
+    except ImportError:                                     # pragma: no cover
         return None
     return diagrams if getattr(diagrams, "DIAGRAMS", None) else None
 

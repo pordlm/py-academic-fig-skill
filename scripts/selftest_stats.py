@@ -148,6 +148,30 @@ def _pr_roc() -> None:
     expect_raises("roc_curve 拒绝 Inf 分数",
                   lambda: roc_mod.roc_curve(yt, np.r_[ys[:-1], np.inf]), "NaN")
 
+    # --- 两点曲线 vs 两样本标签：词法上一模一样，必须靠起点 (0, 1) 区分 ---------
+    ax2 = pr_mod.pr(curves={"两点": (np.array([0.0, 1.0]), np.array([1.0, 0.5]))})
+    line = ax2.get_lines()[0]
+    expect("recall=[0,1] 的两点曲线仍按点集画（不被当成标签）",
+           len(line.get_xdata()) == 2, f"{list(line.get_xdata())}")
+    expect("两点曲线的 AP 按积分算",
+           any("AP=0.500" in t.get_text() for t in ax2.get_legend().get_texts()),
+           f"{[t.get_text() for t in ax2.get_legend().get_texts()]}")
+
+    rc, pc, _ = pr_mod.pr_curve(np.array([0, 1]), np.array([0.2, 0.9]))
+    ax3 = pr_mod.pr(curves={"标签": (np.array([0, 1]), np.array([0.2, 0.9]))})
+    # get_lines()[0] 是随机基线（axhline，只有两点）：曲线永远在最后
+    drawn = ax3.get_lines()[-1]
+    expect("两个样本的 0/1 标签仍走向 pr_curve（按阈值重排后有多点）",
+           len(drawn.get_xdata()) == rc.size and rc.size > 2,
+           f"{len(drawn.get_xdata())} vs {rc.size}")
+
+    curve = pr_mod.PRCurve(recall=np.array([0.0, 1.0]), precision=np.array([1.0, 0.5]),
+                           ap=0.42)
+    ax4 = pr_mod.pr(curves={"显式": curve})
+    expect("PRCurve 走显式分支并用给定的 ap",
+           any("AP=0.420" in t.get_text() for t in ax4.get_legend().get_texts()),
+           f"{[t.get_text() for t in ax4.get_legend().get_texts()]}")
+
 
 def _corr() -> None:
     X = np.array([[1, 5, 3], [2, 5, 1], [3, 5, 4], [4, 5, 2], [5, 5, 6]], float)

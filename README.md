@@ -1,5 +1,7 @@
 # academic-figures · 中文论文插图（简单高级框架风）
 
+[![CI](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml)
+
 把「论文里要一张图」变成**可复现的代码 + 可投稿的产物**：白纸、墨线、细框、
 低饱和强调色、充足留白——像框架图，不像数据看板，也不像 AI 海报。
 
@@ -134,15 +136,20 @@ python scripts/install_skill.py --force          # 覆盖旧安装（等价于�
 ```
 
 **`--force` 会清理陈旧文件**：升级时按 `.install-manifest.json` 的清单修剪「上次装过、这次源码里已没有」
-的文件（遇到没有 `paths` 字段的旧清单则退化为扫描安装目录），并顺手删掉因此变空的子目录；
-你自己往目标目录里放的文件不在清单里，不会被删。这样升级后的副本与仓库逐字节一致，
-不会出现「源码删了图、安装副本还留着，`cli check` 却查不到」的假绿。
+的文件，并顺手删掉因此变空的子目录；你自己往目标目录里放的文件不在清单里，不会被删。
+清单是目标目录里的普通文件，所以修剪是**保守**的：每条路径先过词法检查（绝对路径、盘符、
+`..` 一律拒绝），再用真实路径确认它仍在安装目录内（挡住「中间目录是指向外部的链接」）；
+清单损坏或来自没有 `paths` 字段的旧版本时**一条都不删**，只打印告警——清干净永远排在
+「不误删」之后。这样升级后的副本与仓库逐字节一致，不会出现「源码删了图、安装副本还留着，
+`cli check` 却查不到」的假绿。
+
+复制安装会一并带上 `LICENSE`（GPL 要求分发时附许可证全文）。
 
 每次安装结束都打印两行，方便一眼核对仓库与副本是不是同一版：
 
 ```text
 [4/4] 完成（copy，127 个文件）
-build=0.2.1+YYYYMMDD-HHMM
+build=<version>+YYYYMMDD-HHMM
 目标：D:\paper\.dsh\skills\academic-figures
 ```
 

@@ -48,7 +48,7 @@ from .km import kaplan_meier, km
 from .line import line
 from .lollipop import lollipop
 from .pca import pca
-from .pr import pr, pr_curve
+from .pr import PRCurve, pr, pr_curve
 from .radar import radar
 from .roc import roc, roc_curve
 from .sankey import sankey
@@ -300,6 +300,7 @@ __all__ = [
     "line",
     "lollipop",
     "pca",
+    "PRCurve",
     "pr",
     "pr_curve",
     "radar",
