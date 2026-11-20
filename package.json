@@ -1,0 +1,50 @@
+{
+  "name": "academic-figures",
+  "version": "0.2.0",
+  "description": "Installable composition bundle contributing the academic-figures skill (publication-ready Chinese academic figures with matplotlib) to DeepSeek Harness",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "SKILL.md",
+    "README.md",
+    "BUILD.json",
+    "LICENSE",
+    "academic_fig",
+    "prompts",
+    "references",
+    "examples",
+    "assets",
+    "scripts",
+    "docs",
+    "!examples/out",
+    "!**/__pycache__",
+    "!**/*.pyc"
+  ],
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pordlm/py-academic-fig-skill.git"
+  },
+  "homepage": "https://github.com/pordlm/py-academic-fig-skill#readme",
+  "bugs": {
+    "url": "https://github.com/pordlm/py-academic-fig-skill/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-skill": "^0.2.0-rc.2"
+  }
+}

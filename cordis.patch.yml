@@ -1,0 +1,7 @@
+# Composition layer for this bundle: mounted when a profile lists it
+# (dsh plugin --profile <name> add https://github.com/pordlm/py-academic-fig-skill).
+# The row references this package by name so Node module resolution finds the
+# installed code; `index.js` then registers the bundled `academic-figures` skill.
+- insert:
+    - id: skill-academic-figures
+      name: academic-figures

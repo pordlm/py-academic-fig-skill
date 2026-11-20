@@ -1,0 +1,26 @@
+{
+  "title": "感知—决策—执行泳道",
+  "direction": "h",
+  "lanes": [
+    {"name": "感知"},
+    {"name": "决策"},
+    {"name": "执行"}
+  ],
+  "nodes": [
+    {"id": "p1", "lane": 0, "step": 0, "kind": "start", "label": "采集状态"},
+    {"id": "p2", "lane": 0, "step": 1, "kind": "step", "label": "特征提取", "note": "10 Hz"},
+    {"id": "d1", "lane": 1, "step": 1, "kind": "decision", "label": "风险可接受"},
+    {"id": "m1", "lane": 1, "step": 2, "kind": "step", "label": "轨迹生成"},
+    {"id": "e1", "lane": 2, "step": 2, "kind": "step", "label": "下发控制"},
+    {"id": "e2", "lane": 2, "step": 3, "kind": "end", "label": "执行并回传"}
+  ],
+  "edges": [
+    {"from": "p1", "to": "p2"},
+    {"from": "p2", "to": "d1"},
+    {"from": "d1", "to": "m1", "label": "是"},
+    {"from": "m1", "to": "e1"},
+    {"from": "e1", "to": "e2"},
+    {"from": "e2", "to": "p1", "kind": "return", "label": "下一周期"}
+  ],
+  "footnote": "来源：本文系统结构；口径：示意泳道，三步循环不代表固定周期。"
+}

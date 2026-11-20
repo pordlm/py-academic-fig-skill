@@ -1,0 +1,416 @@
+[
+  {
+    "category": "system",
+    "file": "prompts/00_system.md",
+    "title": "全局系统提示词",
+    "chart_types": [
+      "all"
+    ],
+    "api": [
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "CORE_SYSTEM_RULES"
+  },
+  {
+    "category": "intake",
+    "file": "prompts/10_intake.md",
+    "title": "需求澄清与收口",
+    "chart_types": [
+      "intake_funnel"
+    ],
+    "api": [
+      "academic_fig.paper_fig"
+    ],
+    "prompt_block": "REQUIREMENTS_INTAKE"
+  },
+  {
+    "category": "foundation",
+    "file": "prompts/20_palette_typography.md",
+    "title": "色板与排版规范",
+    "chart_types": [
+      "palette",
+      "typography",
+      "layout"
+    ],
+    "api": [
+      "academic_fig.palette",
+      "academic_fig.typography",
+      "academic_fig.layout"
+    ],
+    "prompt_block": "PALETTE_AND_TYPOGRAPHY"
+  },
+  {
+    "category": "compare",
+    "file": "prompts/30_cat_compare.md",
+    "title": "比较与组成类",
+    "chart_types": [
+      "bar",
+      "grouped_bar",
+      "stacked_bar",
+      "percent_stacked_bar",
+      "dot_plot",
+      "lollipop",
+      "slope_chart",
+      "dumbbell",
+      "waterfall",
+      "pareto",
+      "donut",
+      "treemap"
+    ],
+    "api": [
+      "academic_fig.plots.bar",
+      "academic_fig.plots.grouped_bar",
+      "academic_fig.plots.stacked_bar",
+      "academic_fig.plots.lollipop"
+    ],
+    "prompt_block": "CAT_COMPARE_RULES"
+  },
+  {
+    "category": "trend",
+    "file": "prompts/30_cat_trend.md",
+    "title": "趋势与时间序列类",
+    "chart_types": [
+      "line",
+      "multi_line",
+      "area",
+      "stacked_area",
+      "step",
+      "ribbon_ci",
+      "event_plot",
+      "gantt"
+    ],
+    "api": [
+      "academic_fig.plots.line",
+      "academic_fig.plots.area"
+    ],
+    "prompt_block": "CAT_TREND_RULES"
+  },
+  {
+    "category": "dist",
+    "file": "prompts/30_cat_dist.md",
+    "title": "分布与描述统计类",
+    "chart_types": [
+      "histogram",
+      "kde",
+      "ecdf",
+      "boxplot",
+      "violin",
+      "raincloud",
+      "strip",
+      "swarm",
+      "ridgeline",
+      "errorbar"
+    ],
+    "api": [
+      "academic_fig.plots.violin",
+      "academic_fig.plots.box",
+      "academic_fig.plots.hist"
+    ],
+    "prompt_block": "CAT_DIST_RULES"
+  },
+  {
+    "category": "relation",
+    "file": "prompts/30_cat_relation.md",
+    "title": "关系与回归类",
+    "chart_types": [
+      "scatter",
+      "linear_regression",
+      "bubble",
+      "hist2d",
+      "hexbin",
+      "contour_density",
+      "correlogram",
+      "residual",
+      "qq_plot"
+    ],
+    "api": [
+      "academic_fig.plots.scatter",
+      "academic_fig.plots.corr"
+    ],
+    "prompt_block": "CAT_RELATION_RULES"
+  },
+  {
+    "category": "inference",
+    "file": "prompts/30_cat_inference.md",
+    "title": "假设检验与 Meta 分析类",
+    "chart_types": [
+      "forest_plot",
+      "funnel_plot",
+      "coefficient_plot",
+      "caterpillar",
+      "subgroup_analysis",
+      "sensitivity_analysis"
+    ],
+    "api": [
+      "academic_fig.plots.forest"
+    ],
+    "prompt_block": "CAT_INFERENCE_RULES"
+  },
+  {
+    "category": "ml",
+    "file": "prompts/30_cat_ml.md",
+    "title": "机器学习与模型评估类",
+    "chart_types": [
+      "roc_curve",
+      "pr_curve",
+      "calibration_curve",
+      "confusion_matrix",
+      "decision_boundary",
+      "learning_curve",
+      "feature_importance",
+      "dca"
+    ],
+    "api": [
+      "academic_fig.plots.roc",
+      "academic_fig.plots.pr",
+      "academic_fig.plots.confusion"
+    ],
+    "prompt_block": "CAT_ML_RULES"
+  },
+  {
+    "category": "dimred",
+    "file": "prompts/30_cat_dimred.md",
+    "title": "降维与聚类类",
+    "chart_types": [
+      "pca_score",
+      "pca_loading",
+      "pca_biplot",
+      "scree_plot",
+      "tsne",
+      "umap",
+      "parallel_coordinates",
+      "radar",
+      "dendrogram"
+    ],
+    "api": [
+      "academic_fig.plots.pca",
+      "academic_fig.plots.radar"
+    ],
+    "prompt_block": "CAT_DIMRED_RULES"
+  },
+  {
+    "category": "clinical",
+    "file": "prompts/30_cat_clinical.md",
+    "title": "临床医学与生存分析类",
+    "chart_types": [
+      "kaplan_meier",
+      "number_at_risk",
+      "swimmer_plot",
+      "tumor_waterfall",
+      "cumulative_incidence",
+      "prisma_flow"
+    ],
+    "api": [
+      "academic_fig.plots.km"
+    ],
+    "prompt_block": "CAT_CLINICAL_RULES"
+  },
+  {
+    "category": "omics",
+    "file": "prompts/30_cat_omics.md",
+    "title": "生物信息与组学类",
+    "chart_types": [
+      "volcano_plot",
+      "ma_plot",
+      "manhattan_plot",
+      "genomics_qq",
+      "clustered_heatmap",
+      "upset_plot",
+      "enrichment_bubble"
+    ],
+    "api": [
+      "academic_fig.plots.volcano",
+      "academic_fig.plots.heatmap"
+    ],
+    "prompt_block": "CAT_OMICS_RULES"
+  },
+  {
+    "category": "flow",
+    "file": "prompts/30_cat_flow.md",
+    "title": "流程与网络类",
+    "chart_types": [
+      "flowchart",
+      "system_architecture",
+      "roadmap",
+      "dag",
+      "sankey",
+      "alluvial",
+      "network_graph"
+    ],
+    "api": [
+      "academic_fig.plots.sankey",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.style_axes"
+    ],
+    "prompt_block": "CAT_FLOW_RULES"
+  },
+  {
+    "category": "spatial",
+    "file": "prompts/30_cat_spatial.md",
+    "title": "空间与连续场类",
+    "chart_types": [
+      "point_map",
+      "choropleth",
+      "spatial_heatmap",
+      "contourf",
+      "quiver",
+      "streamplot",
+      "surface_3d",
+      "ternary_plot"
+    ],
+    "api": [
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.style_axes",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "CAT_SPATIAL_RULES"
+  },
+  {
+    "category": "physics",
+    "file": "prompts/30_cat_physics.md",
+    "title": "物理化材实验类",
+    "chart_types": [
+      "spectra_stack",
+      "xrd_pattern",
+      "iv_cv_curve",
+      "nyquist_plot",
+      "bode_plot",
+      "stress_strain",
+      "hysteresis_loop",
+      "arrhenius_plot"
+    ],
+    "api": [
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.style_axes",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "CAT_PHYSICS_RULES"
+  },
+  {
+    "category": "diagram_architecture",
+    "file": "prompts/40_diagram_architecture.md",
+    "title": "示意图：分层框架图",
+    "chart_types": [
+      "layered_architecture"
+    ],
+    "api": [
+      "academic_fig.diagrams.architecture",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "DIAGRAM_ARCHITECTURE_RULES"
+  },
+  {
+    "category": "diagram_flow",
+    "file": "prompts/40_diagram_flow.md",
+    "title": "示意图：流程图",
+    "chart_types": [
+      "process_flowchart"
+    ],
+    "api": [
+      "academic_fig.diagrams.flow",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "DIAGRAM_FLOW_RULES"
+  },
+  {
+    "category": "diagram_field",
+    "file": "prompts/40_diagram_field.md",
+    "title": "示意图：标量场与响应面",
+    "chart_types": [
+      "field_contour",
+      "field_surface",
+      "field_scatter"
+    ],
+    "api": [
+      "academic_fig.diagrams.field",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "DIAGRAM_FIELD_RULES"
+  },
+  {
+    "category": "diagram_geometry",
+    "file": "prompts/40_diagram_geometry.md",
+    "title": "示意图：几何与覆盖",
+    "chart_types": [
+      "geometry_coverage",
+      "geometry_reachability"
+    ],
+    "api": [
+      "academic_fig.diagrams.geometry",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "DIAGRAM_GEOMETRY_RULES"
+  },
+  {
+    "category": "diagram_gate",
+    "file": "prompts/40_diagram_gate.md",
+    "title": "示意图：门限与权衡",
+    "chart_types": [
+      "pareto_frontier",
+      "threshold_gate",
+      "run_envelope"
+    ],
+    "api": [
+      "academic_fig.diagrams.gate",
+      "academic_fig.apply_theme",
+      "academic_fig.paper_fig",
+      "academic_fig.panel",
+      "academic_fig.footnote",
+      "academic_fig.save"
+    ],
+    "prompt_block": "DIAGRAM_GATE_RULES"
+  },
+  {
+    "category": "negative",
+    "file": "prompts/50_negative.md",
+    "title": "负向模式库 (反 AI 味清单)",
+    "chart_types": [
+      "all"
+    ],
+    "api": [
+      "academic_fig.apply_theme",
+      "academic_fig.checks"
+    ],
+    "prompt_block": "NEGATIVE_PATTERNS"
+  },
+  {
+    "category": "rubric",
+    "file": "prompts/60_rubric.md",
+    "title": "出图自检 Rubric",
+    "chart_types": [
+      "all"
+    ],
+    "api": [
+      "academic_fig.checks",
+      "academic_fig.cli"
+    ],
+    "prompt_block": "RUBRIC_CHECKS"
+  }
+]

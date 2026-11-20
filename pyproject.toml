@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "academic-figures"
+version = "0.2.0"
+description = "论文插图风格框架：简单高级的 matplotlib 图表与框架图（含提示词库）"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Text Processing :: Markup",
+    "Natural Language :: Chinese (Simplified)",
+]
+
+[project.optional-dependencies]
+data = ["pandas>=2.0"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+afig = "academic_fig.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/pordlm/academic-figures"
+
+[tool.setuptools]
+packages = ["academic_fig", "academic_fig.plots", "academic_fig.diagrams"]
+include-package-data = false

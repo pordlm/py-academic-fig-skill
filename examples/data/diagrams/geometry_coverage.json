@@ -1,0 +1,116 @@
+{
+  "title": "双站覆盖与作业边界",
+  "x": {
+    "min": -6,
+    "max": 5.6,
+    "label": "东向位置",
+    "unit": "m"
+  },
+  "y": {
+    "min": -5.4,
+    "max": 4.6,
+    "label": "北向位置",
+    "unit": "m"
+  },
+  "regions": [
+    {
+      "poly": [
+        [
+          -5.0,
+          -3.2
+        ],
+        [
+          4.4,
+          -3.2
+        ],
+        [
+          4.4,
+          3.4
+        ],
+        [
+          -5.0,
+          3.4
+        ]
+      ],
+      "color": "WASH",
+      "alpha": 1.0,
+      "edge": "GREY",
+      "lw": 0.8,
+      "ls": "dashed",
+      "label": "作业边界"
+    }
+  ],
+  "circles": [
+    {
+      "center": [
+        -1.8,
+        0.7
+      ],
+      "r": 2.2,
+      "color": "BLUE",
+      "alpha": 0.1,
+      "edge": "BLUE",
+      "label": "覆盖半径"
+    },
+    {
+      "center": [
+        1.6,
+        -0.6
+      ],
+      "r": 2.0,
+      "color": "BLUE",
+      "alpha": 0.1,
+      "edge": "BLUE"
+    }
+  ],
+  "stations": {
+    "pts": [
+      [
+        -1.8,
+        0.7
+      ],
+      [
+        1.6,
+        -0.6
+      ],
+      [
+        3.0,
+        2.4
+      ]
+    ],
+    "label": "测站"
+  },
+  "keypoints": {
+    "pts": [
+      [
+        0.0,
+        0.05
+      ]
+    ],
+    "label": "关键点"
+  },
+  "annotations": [
+    {
+      "x": 0.55,
+      "y": 1.85,
+      "text": "重叠覆盖区"
+    },
+    {
+      "x": 3.85,
+      "y": -2.45,
+      "text": "最坏点",
+      "to": [
+        0.08,
+        0.0
+      ]
+    }
+  ],
+  "scale_bar": {
+    "length": 2,
+    "unit": "m",
+    "position": "upper right"
+  },
+  "legend_loc": "lower left",
+  "legend_ncol": 2,
+  "footnote": "来源：本文几何设置；口径：测点与覆盖半径为示意布设，非实测坐标。"
+}

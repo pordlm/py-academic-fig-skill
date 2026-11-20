@@ -1,0 +1,25 @@
+# 渲染产物（可随时重生成）
+examples/out/
+out/
+
+# Python 缓存与构建产物
+__pycache__/
+*.py[cod]
+.build-venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+# npm / node 本地依赖
+node_modules/
+.npm-cache/
+
+# 临时文件
+.tmp*

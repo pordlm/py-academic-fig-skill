@@ -1,0 +1,22 @@
+{
+  "title": "可达性场三维视图",
+  "kind": "surface3d",
+  "width": "double",
+  "x": {"min": -1, "max": 1, "n": 49},
+  "y": {"min": -1, "max": 1, "n": 49},
+  "field": {
+    "type": "gaussian_sum",
+    "offset": 0.0,
+    "peaks": [
+      {"cx": -0.18, "cy": 0.12, "amp": 1.0, "sx": 0.36, "sy": 0.30, "theta": 10}
+    ]
+  },
+  "labels": {
+    "x": "位置 x（m）",
+    "y": "位置 y（m）",
+    "z": "场强 Φ"
+  },
+  "elev": 24,
+  "azim": -58,
+  "footnote": "来源：本文可达性场模型；口径：场强为无量纲量，形状仅作结构示意。"
+}

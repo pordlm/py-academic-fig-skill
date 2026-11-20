@@ -1,0 +1,56 @@
+{
+  "version": "0.2.0",
+  "build": "0.2.0+20261121-0009",
+  "generated_at": "2026-11-21T00:09:47",
+  "source_mtime": "2026-11-21T00:09:47",
+  "package_py_files": 40,
+  "delivery_files": 138,
+  "delivery_bytes": 3165298,
+  "delivery_excludes": [
+    "examples/out",
+    "reports",
+    "out",
+    "build",
+    "dist",
+    "__pycache__",
+    ".pytest_cache"
+  ],
+  "key_files": {
+    "academic_fig/__init__.py": {
+      "sha256": "d5ac92c85836342d440632354ddd0f8264ea70269d7aef298d57dc5b52f763e1",
+      "bytes": 5005
+    },
+    "academic_fig/checks.py": {
+      "sha256": "a0b0b66228b4337be2bf0db1ab889cef96e685afce22a35ebaba3b40acd4dea6",
+      "bytes": 64782
+    },
+    "academic_fig/export.py": {
+      "sha256": "0e3ac6978002cbec1478d3db3b5afaf141be9edc3367737487558ff746ff4f49",
+      "bytes": 40012
+    },
+    "academic_fig/layout.py": {
+      "sha256": "8b4ae5b21f17a0bd4c009bbc7ec2c624a604eb3724ede0cbdf4c0ffb7e92a3ec",
+      "bytes": 24989
+    },
+    "academic_fig/style.py": {
+      "sha256": "f1219b9af6f1d27e82d3d1e8782c5efc2599f86831f9ff83dbeabdc6e1564aa7",
+      "bytes": 28682
+    },
+    "academic_fig/plots/__init__.py": {
+      "sha256": "f12115025fb7de791ef3af0843c62331d4adeed41b6f33453c4655b1d4d4ad41",
+      "bytes": 11704
+    },
+    "academic_fig/palette.py": {
+      "sha256": "cfba9cfb9a603edd4c2434474949d8f70b0eaa9f1fabf9b7cb56efaada729061",
+      "bytes": 7124
+    },
+    "README.md": {
+      "sha256": "3e50c948bba42d07bcd84f13d37e8b30699e97dcecc3d96e370e402cad8bd28e",
+      "bytes": 32105
+    },
+    "SKILL.md": {
+      "sha256": "790451abc186dff67ff0056cb61753c1f1fcb5ab87bc3bbb2ba456a33e87d823",
+      "bytes": 16447
+    }
+  }
+}

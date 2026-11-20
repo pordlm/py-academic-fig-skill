@@ -1,0 +1,24 @@
+{
+  "title": "覆盖与时延的取舍",
+  "kind": "pareto",
+  "width": "single",
+  "x": {"label": "平均响应时延", "unit": "ms", "min": 8, "max": 42},
+  "y": {"label": "任务覆盖率", "unit": "%", "min": 80, "max": 102},
+  "cloud": {
+    "n": 70,
+    "seed": 7,
+    "x": {"min": 9, "max": 40},
+    "model": "log",
+    "a": 62,
+    "b": 10,
+    "noise": 1.6
+  },
+  "pareto": {"sense": ["min", "max"], "label": "帕累托前沿"},
+  "thresholds": [
+    {"axis": "y", "value": 95, "label": "目标 95%"},
+    {"axis": "x", "value": 20, "label": "预算 20 ms"}
+  ],
+  "ideal": {"dx": -1, "dy": 1, "text": "更优"},
+  "legend_loc": "lower right",
+  "footnote": "来源：本文 70 次仿真；口径：示意数据，非实测指标；阈值线为自设目标，非官方指标。"
+}

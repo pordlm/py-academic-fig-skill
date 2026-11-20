@@ -1,0 +1,23 @@
+{
+  "title": "滚动重规划流程",
+  "direction": "v",
+  "width": "single",
+  "nodes": [
+    {"id": "s1", "kind": "start", "row": 0, "col": 0, "label": "读取工况"},
+    {"id": "s2", "kind": "step", "row": 1, "col": 0, "label": "构建约束集", "note": "n = 24"},
+    {"id": "d1", "kind": "decision", "row": 2, "col": 0, "label": "残差超阈？"},
+    {"id": "s3", "kind": "step", "row": 2, "col": 1, "label": "局部重规划", "accent": "CLAY"},
+    {"id": "s4", "kind": "step", "row": 3, "col": 0, "label": "滚动执行一步"},
+    {"id": "s5", "kind": "end", "row": 4, "col": 0, "label": "输出轨迹"}
+  ],
+  "edges": [
+    {"from": "s1", "to": "s2"},
+    {"from": "s2", "to": "d1"},
+    {"from": "d1", "to": "s3", "label": "是"},
+    {"from": "d1", "to": "s4", "label": "否"},
+    {"from": "s3", "to": "s4"},
+    {"from": "s4", "to": "s5"},
+    {"from": "s5", "to": "s2", "kind": "return", "label": "下一轮"}
+  ],
+  "footnote": "来源：本文算法流程；口径：示意流程，判定阈值与步长按工况设定。"
+}
