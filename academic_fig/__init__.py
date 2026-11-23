@@ -65,11 +65,11 @@ try:
 except ImportError:  # 只吞「模块不存在」；模块内部写错（NameError 等）必须照常抛
     diagrams = None  # type: ignore[assignment]
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 
 def _compute_build() -> str:
-    """生成 build 串：``0.2.3+YYYYMMDD-HHMM``。
+    """生成 build 串：``0.2.4+YYYYMMDD-HHMM``。
 
     复评时「哪个版本被戳过」必须可判：同一分钟内多文件在改写，靠版本号常量看不出来，
     所以把**最近一次写入 BUILD.json 的时间戳**编进 build 串。

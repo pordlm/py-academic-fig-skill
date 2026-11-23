@@ -11,7 +11,7 @@
 [![CI](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/pordlm/py-academic-fig-skill/actions/workflows/ci.yml)
 [![Python >=3.10](https://img.shields.io/badge/python-%3E%3D3.10-2F5D8A.svg)](pyproject.toml)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-3F6B52.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.3-5B6B7C.svg)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-0.2.4-5B6B7C.svg)](pyproject.toml)
 
 [快速上手](#30-秒上手) · [安装](#安装) · [图表与示意图](#图表与示意图) · [样张展示](#样张展示) · [风格规范](#风格规范) · [CLI 自检](#cli-与出图自检) · [文档](#相关文档)
 
@@ -75,7 +75,7 @@ afg.save(fig, "fig02_custom")
 
 ## 安装
 
-环境要求：**Python ≥ 3.10**，核心依赖仅 `numpy` 与 `matplotlib`（`pandas` 可选，安装后支持直接传入 DataFrame）。
+环境要求：**Python ≥ 3.10**，核心依赖仅 `numpy` 与 `matplotlib`（`pandas` 可选，安装后支持直接传入 DataFrame）。作为 DSH Skill 安装时，要求 **DSH ≥ 0.2.0**（含 0.2.0-rc 起的全部预发布与后续 0.3.x；已在 `package.json` 的 `engines.dsh = ">=0.2.0-0"` 中显式声明，不再从 `peerDependencies` 反推）。
 
 | 安装方式 | 适用场景 | 包含内容 |
 | --- | --- | --- |

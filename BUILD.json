@@ -1,17 +1,17 @@
 {
-  "version": "0.2.3",
-  "build": "0.2.3+20261121-0139",
-  "generated_at": "2026-11-21T01:40:10",
-  "source_mtime": "2026-11-21T01:39:50",
+  "version": "0.2.4",
+  "build": "0.2.4+20261124-0056",
+  "generated_at": "2026-11-24T00:56:44",
+  "source_mtime": "2026-11-24T00:56:40",
   "package_py_files": 40,
   "delivery_files": 150,
-  "delivery_bytes": 3273575,
-  "delivery_tree_sha256": "0907a91ec9c8a3c479ab9a7195dea57efd6b9bac21b71e3bb7ba1b303e844377",
+  "delivery_bytes": 3273837,
+  "delivery_tree_sha256": "5536d48624bf279cdb67ff4b4a1a2bd9468f749938ad066e42ffb2389324bc44",
   "delivery_manifest": {
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
-    "README.md": "1873c8e894c5ff3e187d24ccd34c61e4369cf3ed2f6cc7707e756aec84e2818d",
-    "SKILL.md": "c5af3f93771bd6fcafd5fb45f1f1ed17e74a407ba147d0256d8d73c9b3f3920f",
-    "academic_fig/__init__.py": "180ad0126c8dc487baa67a18174164e42184ca01d0ecbacbfc2c87f4403f3373",
+    "README.md": "466c684cf59d2aa39a6c43a419e479654505a6eee2d595de1122415e854867ba",
+    "SKILL.md": "e8a9d7a069cefddca480f081bf8a60254587cba24638141554ae128d06aaaedc",
+    "academic_fig/__init__.py": "5297ba9bcb6af5ea94da7969e69ee6e5a034b606394dba64590873fc5b2665da",
     "academic_fig/checks.py": "a0b0b66228b4337be2bf0db1ab889cef96e685afce22a35ebaba3b40acd4dea6",
     "academic_fig/cli.py": "e42bb1122ea6d9255c7bc4ed9805d7455bf679876b37a0082b986e26d6a4a34e",
     "academic_fig/diagrams/__init__.py": "407bd3cc58d7c6029b2a6e9e26b1a91119ebf7e47c36b217c13f04ff1da1bd90",
@@ -107,7 +107,7 @@
     "examples/render_plots.py": "2280d21f3a7710e9bc7238ffede6c4162507e3f29570f83f9688b5857df9841a",
     "examples/render_showcase.py": "e3924dad1e1d870a7d2de17497c258901b6f4c047bbc914a3c01e67249f9a93a",
     "index.js": "b0f204240d26664f84abed3dd28a1cc0f5ae9ca2c13b439e810dfb97fae379c5",
-    "package.json": "e25b5653fed47aad13b1f574b0126dfc416f6f31ca45fdfad1537a12cfa4152d",
+    "package.json": "ede8a9e2b46efec81f99dfa5993734cdb5872e38ec4e6b261ab54622443d66f4",
     "prompts/00_system.md": "a6eace8088a9e1536f407089656ea8bdd392f63bb116497d2eaed00e172f73b6",
     "prompts/10_intake.md": "311bfa9d3ff391ce0f314db42a8d5cec57c2c7ba07013d7241e4c3aa85e66245",
     "prompts/20_palette_typography.md": "fbdfffaea742112aaacb565c562ed329020ff7f5423de23c13b914849e1e01f8",
@@ -132,7 +132,7 @@
     "prompts/60_rubric.md": "dc3cb323a1ac0ceee3e382678fc011c07d737006aa111ba4a965746464c7262a",
     "prompts/index.json": "96855107824e7425ddfb8eaaf1ca35a5776898954c61d2b187b723af8dc798da",
     "prompts/index.md": "06d6e081699e33ec04d58332edccce7eeecbdfe6f72492144fbe104615899d99",
-    "pyproject.toml": "9acea88523cd2e09a28db653247e1394b558509e7f249c6af22d7d05654c0cd6",
+    "pyproject.toml": "6df8fd78edee58df39399374c1d8e7e5813b4306808b5bde7e100370fa9f52f6",
     "references/diagram-spec-fields.md": "5b409189958fc5969a586667a0ea9eb5e2bbf7ba356cc269c42269ea8516daaa",
     "references/figure-routing.md": "6091adee6ae5081afacd053d9dd8a3c69814d7c2adddbd1b6e6910d70055b6a6",
     "references/journal-specs.md": "ef9c04aac2d03aff9f108c1e7389aaeee3c84a737a289dedbbd44c2294d1e944",
@@ -170,7 +170,7 @@
   ],
   "key_files": {
     "academic_fig/__init__.py": {
-      "sha256": "180ad0126c8dc487baa67a18174164e42184ca01d0ecbacbfc2c87f4403f3373",
+      "sha256": "5297ba9bcb6af5ea94da7969e69ee6e5a034b606394dba64590873fc5b2665da",
       "bytes": 4974
     },
     "academic_fig/checks.py": {
@@ -198,11 +198,11 @@
       "bytes": 7124
     },
     "README.md": {
-      "sha256": "1873c8e894c5ff3e187d24ccd34c61e4369cf3ed2f6cc7707e756aec84e2818d",
-      "bytes": 21831
+      "sha256": "466c684cf59d2aa39a6c43a419e479654505a6eee2d595de1122415e854867ba",
+      "bytes": 22052
     },
     "SKILL.md": {
-      "sha256": "c5af3f93771bd6fcafd5fb45f1f1ed17e74a407ba147d0256d8d73c9b3f3920f",
+      "sha256": "e8a9d7a069cefddca480f081bf8a60254587cba24638141554ae128d06aaaedc",
       "bytes": 16448
     }
   }

@@ -3,7 +3,7 @@ name: academic-figures
 description: 生成中文论文插图（数据图 / 框架图 / 场量图 / 流程图）统一的「简单高级框架风」：白底墨线、低饱和强调色、细框刻度朝内、PNG+PDF 双出。用于画论文图表、复现或改造已有插图、把数据变成可投稿的图、按期刊规格排版多面板图。当用户提到论文配图、论文插图、figure、图表美化、框架图、技术路线图、消融实验图、热力图、雷达图、桑基图、ROC、混淆矩阵、响应面、覆盖图时使用。
 whenToUse: 用户要画、改、统一风格化论文/报告的统计图或示意图；需要 matplotlib 出图并交付 PNG(300dpi)+PDF(矢量)；需要中文标注且不能出现方框乱码；需要多面板、期刊尺寸、图注与自检。
 metadata:
-  version: "0.2.3"
+  version: "0.2.4"
   palette: paper-calm
   entry: academic_fig
 ---
